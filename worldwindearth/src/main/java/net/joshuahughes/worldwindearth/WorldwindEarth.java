@@ -11,6 +11,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.WindowConstants;
 
+import net.joshuahughes.worldwindearth.listener.Overlay;
 import net.joshuahughes.worldwindearth.listener.Single;
 import net.joshuahughes.worldwindearth.menubar.MenuBar;
 import net.joshuahughes.worldwindearth.panel.Panel;
@@ -30,6 +31,8 @@ public class WorldwindEarth extends JFrame{
 		setTitle("Worldwind Earth");
 		toolBarEarthPanel.add(viewer.getViewer(),BorderLayout.CENTER);
 		setJMenuBar(menubar);
+		for(Overlay overlay : Overlay.values())
+			viewer.setVisible(overlay,menubar.get(overlay).isSelected());
 		menubar.doClicks();
 	}
 	public MenuBar getMenubar() {
