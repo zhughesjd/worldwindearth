@@ -79,6 +79,7 @@ public class WorldwindViewer extends JPanel implements Viewer{
 	public void setVisible(Class<Layer> clazz,boolean show){
 	}
 	public void add(Feature feature) {
+		System.out.println("V:"+feature.getName());
 	}
 
 	public boolean remove(Feature feature) {

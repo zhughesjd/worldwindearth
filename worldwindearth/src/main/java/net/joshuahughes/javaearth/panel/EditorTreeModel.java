@@ -1,29 +1,20 @@
 package net.joshuahughes.javaearth.panel;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 
+import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import de.micromata.opengis.kml.v_2_2_0.Document;
+import de.micromata.opengis.kml.v_2_2_0.Feature;
 import de.micromata.opengis.kml.v_2_2_0.Folder;
-import de.micromata.opengis.kml.v_2_2_0.Kml;
 
 public class EditorTreeModel implements TreeModel{
-	public enum Model{Search,Places,Layers;Kml kml = new Kml();Folder folder = kml.createAndSetFolder();}
-	private static final Folder myPlaces = Model.Places.folder.createAndAddFolder();
-	private static final Folder temporaryPlaces = Model.Places.folder.createAndAddFolder();
-	private static final Folder primaryDatabase = Model.Layers.folder.createAndAddFolder();
-	static {
-		myPlaces.setName("My Places");
-		temporaryPlaces.setName("Temporary Places");
-		primaryDatabase.setName("Primary Database");
-		for(Folder folder : new Folder[]{Model.Search.folder,myPlaces,temporaryPlaces,primaryDatabase}){
-			folder.createAndAddDocument();
-			folder.getFeature().clear();
-		}
-	}
+	public static enum Id{append}
 	private Folder root;
 	public EditorTreeModel(Folder folder){
 		this.root = folder;
@@ -63,9 +54,28 @@ public class EditorTreeModel implements TreeModel{
 	}
 
 	@Override
-	public void valueForPathChanged(TreePath path, Object newValue) {
-		
-	}
+	public void valueForPathChanged(TreePath path, Object value) {
+	    File oldFile = (File) path.getLastPathComponent();
+	    String fileParentPath = oldFile.getParent();
+	    String newFileName = (String) value;
+	    File targetFile = new File(fileParentPath, newFileName);
+	    oldFile.renameTo(targetFile);
+	    File parent = new File(fileParentPath);
+	    int[] changedChildrenIndices = { getIndexOfChild(parent, targetFile) };
+	    Object[] changedChildren = { targetFile };
+	    fireTreeNodesChanged(path.getParentPath(), changedChildrenIndices, changedChildren);
+	 
+	  }
+	 
+	  private void fireTreeNodesChanged(TreePath parentPath, int[] indices, Object[] children) {
+	    TreeModelEvent event = new TreeModelEvent(this, parentPath, indices, children);
+	    Iterator<TreeModelListener> iterator = listenerList.iterator();
+	    TreeModelListener listener = null;
+	    while (iterator.hasNext()) {
+	      listener = (TreeModelListener) iterator.next();
+	      listener.treeNodesChanged(event);
+	    }
+	  }
 
 	@Override
 	public void addTreeModelListener(TreeModelListener l) {
@@ -76,5 +86,16 @@ public class EditorTreeModel implements TreeModel{
 	@Override
 	public void removeTreeModelListener(TreeModelListener l) {
 		listenerList.remove(l);
+	}
+	int index=0;
+	public void append(Feature feature) {
+		feature.setId("Id"+index++);
+		if(Id.append.name().equals(root.getId()))
+			root.getFeature().add(feature);
+		for(Feature f : root.getFeature()){
+			Folder folder = (Folder) f;
+			if(Id.append.name().equals(folder.getId()))
+				folder.getFeature().add(feature);
+		}
 	}
 }

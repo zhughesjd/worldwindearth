@@ -8,33 +8,67 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import net.joshuahughes.javaearth.dialog.Folder;
-import net.joshuahughes.javaearth.panel.EditorTreeModel.Model;
+import net.joshuahughes.javaearth.WorldwindEarth;
+import net.joshuahughes.javaearth.panel.EditorTreeModel.Id;
+import de.micromata.opengis.kml.v_2_2_0.Feature;
+import de.micromata.opengis.kml.v_2_2_0.Folder;
+import de.micromata.opengis.kml.v_2_2_0.Kml;
 
 
 
 public class Panel extends JPanel{
 	private static final long serialVersionUID = 8681617797552918262L;
-
+	public enum KmlType{Search,Places,Layers}
+	private ArrayList<ButtonPanel> panelList = new ArrayList<>();
+	LinkedHashMap<KmlType,EditorTreeModel> editorMap = new LinkedHashMap<>();
+	LinkedHashMap<KmlType,PanelTree> treeMap = new LinkedHashMap<>();
 	public Panel(){
 		super(new GridBagLayout());
-		for(Model model : Model.values())
-			add(model.name(),new JScrollPane(new PanelTree(new EditorTreeModel(model.folder))));
-	}
-	private ArrayList<ButtonPanel> panelList = new ArrayList<>();
-	public void add(String title,JComponent comp){
-		panelList.add(new ButtonPanel(title, comp));
-		adjust();
+		LinkedHashSet<Folder> fix = new LinkedHashSet<>();
+		for(KmlType type : KmlType.values()){
+			Folder folder = new Kml().createAndSetFolder();
+			if(KmlType.Search.equals(type)){
+				fix.add(folder);
+			}
+			if(KmlType.Places.equals(type)){
+				Folder myPlaces = folder.createAndAddFolder();
+				myPlaces.setName("My Places");
+				fix.add(myPlaces);
+				Folder temporaryPlaces = folder.createAndAddFolder();
+				temporaryPlaces.setName("Temporary Places");
+				fix.add(temporaryPlaces);
+			}
+			if(KmlType.Layers.equals(type)){
+				Folder primaryDatabase = folder.createAndAddFolder();
+				primaryDatabase.setName("Primary Database");
+				fix.add(primaryDatabase);
+			}
+			for(Folder fixFolder : fix){
+				fixFolder.createAndAddDocument();
+				fixFolder.getFeature().clear();
+				if(!"My Places".equals(fixFolder.getName())) fixFolder.setId(Id.append.name());
+			}
+			EditorTreeModel model = new EditorTreeModel(folder);
+			editorMap.put(type, model);
+			PanelTree  panelTree = new PanelTree(model);
+			treeMap.put(type, panelTree);
+			JScrollPane pane = new JScrollPane(panelTree);
+			panelList.add(new ButtonPanel(type.name(),pane));
+			adjust();
+		}
 	}
 	public void addNewFolder(){
-		Folder dlg = new Folder();
+		JDialog dlg = new JDialog();
 		dlg.setVisible(true);
 		
 	}
@@ -89,5 +123,18 @@ public class Panel extends JPanel{
 		public boolean isExpanded() {
 			return this.box.isSelected();
 		}
+	}
+	public void append(KmlType type,Feature feature) {
+		if(KmlType.Places.equals(type)){
+			editorMap.get(type).append(feature);
+			WorldwindEarth.findWindow((Component)this).getEarthviewer().add(feature);
+			update(type);
+		}
+	}
+	private void update(KmlType type) {
+		treeMap.get(type).setModel(editorMap.get(type));
+		treeMap.get(type).repaint();
+		treeMap.get(type).revalidate();
+		treeMap.get(type).updateUI();
 	}
 }

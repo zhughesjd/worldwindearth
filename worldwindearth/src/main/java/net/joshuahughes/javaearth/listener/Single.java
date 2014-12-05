@@ -14,17 +14,44 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.AbstractButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.filechooser.FileFilter;
 
+import de.micromata.opengis.kml.v_2_2_0.Kml;
 import net.joshuahughes.javaearth.WorldwindEarth;
+import net.joshuahughes.javaearth.panel.Panel.KmlType;
 
 public enum Single implements Listener{
 	Open___{
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			System.out.println(this.name());			
+			JFileChooser chooser = new JFileChooser();
+			chooser.addChoosableFileFilter(new FileFilter() {
+				@Override
+				public String getDescription() {
+					return "Google Earth";
+				}
+				@Override
+				public boolean accept(File f) {
+					return f.getName().endsWith(".kml") || f.getName().endsWith(".kmz");
+				}
+			});
+			if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
+				
+				try {
+					File file = chooser.getSelectedFile();
+					Kml[] kmls = file.getName().endsWith(".kml")?new Kml[]{Kml.unmarshal(file)}:Kml.unmarshalFromKmz(file);
+					for(Kml kml : kmls)
+						WorldwindEarth.findWindow((Component) e.getSource()).getPanel().append(KmlType.Places,kml.getFeature());
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
 		}
 	},
 	Revert{
