@@ -13,8 +13,10 @@ import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import net.joshuahughes.javaearth.dialog.Folder;
+import net.joshuahughes.javaearth.panel.EditorTreeModel.Model;
 
 
 
@@ -23,9 +25,8 @@ public class Panel extends JPanel{
 
 	public Panel(){
 		super(new GridBagLayout());
-		add(Search.class.getSimpleName(),new Search());
-		add(Places.class.getSimpleName(),new Places());
-		add(Layers.class.getSimpleName(),new Layers());
+		for(Model model : Model.values())
+			add(model.name(),new JScrollPane(new PanelTree(new EditorTreeModel(model.folder))));
 	}
 	private ArrayList<ButtonPanel> panelList = new ArrayList<>();
 	public void add(String title,JComponent comp){

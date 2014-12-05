@@ -28,7 +28,7 @@ public class WorldwindEarth extends JFrame{
 	JPanel toolBarEarthPanel = new JPanel(new BorderLayout());
 	JSplitPane panelToolBarEarthPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,panel,toolBarEarthPanel);
 	public WorldwindEarth(){
-		setTitle("Worldwind Earth");
+		setTitle("Java Earth");
 		toolBarEarthPanel.add(viewer.getViewer(),BorderLayout.CENTER);
 		setJMenuBar(menubar);
 		for(Overlay overlay : Overlay.values())
