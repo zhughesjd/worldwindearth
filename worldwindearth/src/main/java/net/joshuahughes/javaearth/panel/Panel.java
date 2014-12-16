@@ -7,9 +7,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
@@ -18,47 +18,18 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import net.joshuahughes.javaearth.WorldwindEarth;
-import net.joshuahughes.javaearth.panel.EditorTreeModel.Id;
-import de.micromata.opengis.kml.v_2_2_0.Feature;
-import de.micromata.opengis.kml.v_2_2_0.Folder;
-import de.micromata.opengis.kml.v_2_2_0.Kml;
-
 
 
 public class Panel extends JPanel{
 	private static final long serialVersionUID = 8681617797552918262L;
-	public enum KmlType{Search,Places,Layers}
 	private ArrayList<ButtonPanel> panelList = new ArrayList<>();
-	LinkedHashMap<KmlType,EditorTreeModel> editorMap = new LinkedHashMap<>();
-	LinkedHashMap<KmlType,PanelTree> treeMap = new LinkedHashMap<>();
+	EditorTreeModel.Type[] types = new EditorTreeModel.Type[]{EditorTreeModel.Type.Search,EditorTreeModel.Type.Places,EditorTreeModel.Type.Layers};
+	LinkedHashMap<EditorTreeModel.Type,EditorTreeModel> editorMap = new LinkedHashMap<>();
+	LinkedHashMap<EditorTreeModel.Type,PanelTree> treeMap = new LinkedHashMap<>();
 	public Panel(){
 		super(new GridBagLayout());
-		LinkedHashSet<Folder> fix = new LinkedHashSet<>();
-		for(KmlType type : KmlType.values()){
-			Folder folder = new Kml().createAndSetFolder();
-			if(KmlType.Search.equals(type)){
-				fix.add(folder);
-			}
-			if(KmlType.Places.equals(type)){
-				Folder myPlaces = folder.createAndAddFolder();
-				myPlaces.setName("My Places");
-				fix.add(myPlaces);
-				Folder temporaryPlaces = folder.createAndAddFolder();
-				temporaryPlaces.setName("Temporary Places");
-				fix.add(temporaryPlaces);
-			}
-			if(KmlType.Layers.equals(type)){
-				Folder primaryDatabase = folder.createAndAddFolder();
-				primaryDatabase.setName("Primary Database");
-				fix.add(primaryDatabase);
-			}
-			for(Folder fixFolder : fix){
-				fixFolder.createAndAddDocument();
-				fixFolder.getFeature().clear();
-				if(!"My Places".equals(fixFolder.getName())) fixFolder.setId(Id.append.name());
-			}
-			EditorTreeModel model = new EditorTreeModel(folder);
+		for(EditorTreeModel.Type type : types){
+			EditorTreeModel model = new EditorTreeModel(type);
 			editorMap.put(type, model);
 			PanelTree  panelTree = new PanelTree(model);
 			treeMap.put(type, panelTree);
@@ -124,17 +95,7 @@ public class Panel extends JPanel{
 			return this.box.isSelected();
 		}
 	}
-	public void append(KmlType type,Feature feature) {
-		if(KmlType.Places.equals(type)){
-			editorMap.get(type).append(feature);
-			WorldwindEarth.findWindow((Component)this).getEarthviewer().add(feature);
-			update(type);
-		}
-	}
-	private void update(KmlType type) {
-		treeMap.get(type).setModel(editorMap.get(type));
-		treeMap.get(type).repaint();
-		treeMap.get(type).revalidate();
-		treeMap.get(type).updateUI();
+	public void open(File kmlFile) {
+		editorMap.get(EditorTreeModel.Type.Places).add(kmlFile);
 	}
 }

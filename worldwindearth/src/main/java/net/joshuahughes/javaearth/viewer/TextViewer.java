@@ -1,5 +1,14 @@
 package net.joshuahughes.javaearth.viewer;
 
+import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
+import gov.nasa.worldwind.ogc.kml.KMLLinearRing;
+import gov.nasa.worldwind.ogc.kml.KMLModel;
+import gov.nasa.worldwind.ogc.kml.KMLNetworkLink;
+import gov.nasa.worldwind.ogc.kml.KMLPhotoOverlay;
+import gov.nasa.worldwind.ogc.kml.KMLPoint;
+import gov.nasa.worldwind.ogc.kml.KMLPolygon;
+import gov.nasa.worldwind.ogc.kml.gx.GXTour;
+
 import java.awt.Component;
 
 import javax.swing.JLabel;
@@ -10,12 +19,6 @@ import net.joshuahughes.javaearth.listener.Overlay;
 import net.joshuahughes.javaearth.listener.Reset;
 import net.joshuahughes.javaearth.listener.Show_Navigation;
 import net.joshuahughes.javaearth.listener.View_Size;
-import de.micromata.opengis.kml.v_2_2_0.Feature;
-import de.micromata.opengis.kml.v_2_2_0.GroundOverlay;
-import de.micromata.opengis.kml.v_2_2_0.NetworkLink;
-import de.micromata.opengis.kml.v_2_2_0.PhotoOverlay;
-import de.micromata.opengis.kml.v_2_2_0.Placemark;
-import de.micromata.opengis.kml.v_2_2_0.gx.Tour;
 
 public class TextViewer implements Viewer{
 	JLabel label = new JLabel("empty viewer",JLabel.CENTER);
@@ -23,16 +26,6 @@ public class TextViewer implements Viewer{
 		label.setText("overlay "+view.name()+" visibility: "+show);
 	}
 
-	public void add(Feature feature) {
-		if(feature instanceof Placemark)
-			label.setText("creating: "+((Placemark)feature).getGeometry().getClass().getSimpleName());
-		else
-			label.setText("creating: "+feature.getClass().getSimpleName());
-	}
-
-	public boolean remove(Feature feature) {
-		return false;
-	}
 
 	public void add(String wmsPath) {
 	}
@@ -69,26 +62,35 @@ public class TextViewer implements Viewer{
 	}
 
 	@Override
-	public Feature create(Create creation) {
-		Placemark placemark = new Placemark();
-		Feature feature = placemark;
+	public void add(KMLAbstractObject feature) {
+		label.setText("adding: "+feature.getClass().getSimpleName());
+	}
+
+	@Override
+	public boolean remove(KMLAbstractObject feature) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public KMLAbstractObject create(Create creation) {
+		KMLAbstractObject object = new KMLAbstractObject() {};
+		String uri = null;
 		if(Create.Placemark.equals(creation))
-			placemark.createAndSetPoint();
+			object = new KMLPoint(uri);
 		if(Create.Path.equals(creation))
-			placemark.createAndSetLineString();
+			object = new KMLLinearRing(uri);
 		if(Create.Model.equals(creation))
-			placemark.createAndSetModel();
+			object = new KMLModel(uri);
 		if(Create.Polygon.equals(creation))
-			placemark.createAndSetPolygon();
+			object = new KMLPolygon(uri);
 		if(Create.Image_Overlay.equals(creation))
-			feature = new GroundOverlay();
+			object = new KMLPhotoOverlay(uri);
 		if(Create.Tour.equals(creation))
-			feature = new Tour();
-		if(Create.Image_Overlay.equals(creation))
-			feature = new PhotoOverlay();
+			object = new GXTour(uri);
 		if(Create.Network_Link.equals(creation))
-			feature = new NetworkLink();
-		label.setText("Returning:"+feature.toString());
-		return feature;
+			object = new KMLNetworkLink(uri);
+		label.setText("Returning:"+object.getClass().getName());
+		return object;
 	}
 }

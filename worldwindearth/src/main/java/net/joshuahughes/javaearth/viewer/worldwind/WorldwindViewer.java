@@ -13,6 +13,15 @@ import gov.nasa.worldwind.layers.ViewControlsLayer;
 import gov.nasa.worldwind.layers.ViewControlsSelectListener;
 import gov.nasa.worldwind.layers.WorldMapLayer;
 import gov.nasa.worldwind.layers.Earth.BMNGOneImage;
+import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
+import gov.nasa.worldwind.ogc.kml.KMLGroundOverlay;
+import gov.nasa.worldwind.ogc.kml.KMLLinearRing;
+import gov.nasa.worldwind.ogc.kml.KMLModel;
+import gov.nasa.worldwind.ogc.kml.KMLNetworkLink;
+import gov.nasa.worldwind.ogc.kml.KMLPhotoOverlay;
+import gov.nasa.worldwind.ogc.kml.KMLPoint;
+import gov.nasa.worldwind.ogc.kml.KMLPolygon;
+import gov.nasa.worldwind.ogc.kml.gx.GXTour;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwindx.examples.util.StatusLayer;
 
@@ -28,12 +37,6 @@ import net.joshuahughes.javaearth.listener.Reset;
 import net.joshuahughes.javaearth.listener.Show_Navigation;
 import net.joshuahughes.javaearth.listener.View_Size;
 import net.joshuahughes.javaearth.viewer.Viewer;
-import de.micromata.opengis.kml.v_2_2_0.Feature;
-import de.micromata.opengis.kml.v_2_2_0.GroundOverlay;
-import de.micromata.opengis.kml.v_2_2_0.NetworkLink;
-import de.micromata.opengis.kml.v_2_2_0.PhotoOverlay;
-import de.micromata.opengis.kml.v_2_2_0.Placemark;
-import de.micromata.opengis.kml.v_2_2_0.gx.Tour;
 
 public class WorldwindViewer extends JPanel implements Viewer{
 	private static final long serialVersionUID = 8482957233805118951L;
@@ -78,14 +81,6 @@ public class WorldwindViewer extends JPanel implements Viewer{
 	}
 	public void setVisible(Class<Layer> clazz,boolean show){
 	}
-	public void add(Feature feature) {
-		System.out.println("V:"+feature.getName());
-	}
-
-	public boolean remove(Feature feature) {
-		return false;
-	}
-
 	public void add(String wmsPath) {
 	}
 
@@ -114,25 +109,34 @@ public class WorldwindViewer extends JPanel implements Viewer{
 	}
 
 	@Override
-	public Feature create(Create creation) {
-		Placemark placemark = new Placemark();
-		Feature feature = placemark;
+	public KMLAbstractObject create(Create creation) {
+		KMLAbstractObject object = new KMLAbstractObject() {};
+		String uri = null;
 		if(Create.Placemark.equals(creation))
-			placemark.createAndSetPoint();
+			object = new KMLPoint(uri);
 		if(Create.Path.equals(creation))
-			placemark.createAndSetLineString();
-		if(Create.Model.equals(creation))
-			placemark.createAndSetModel();
+			object = new KMLLinearRing(uri);
 		if(Create.Polygon.equals(creation))
-			placemark.createAndSetPolygon();
-		if(Create.Image_Overlay.equals(creation))
-			feature = new GroundOverlay();
+			object = new KMLPolygon(uri);
+		if(Create.Model.equals(creation))
+			object = new KMLModel(uri);
 		if(Create.Tour.equals(creation))
-			feature = new Tour();
+			object = new GXTour(uri);
+		if(Create.Photo.equals(creation))
+			object = new KMLPhotoOverlay(uri);
 		if(Create.Image_Overlay.equals(creation))
-			feature = new PhotoOverlay();
+			object = new KMLGroundOverlay(uri);
 		if(Create.Network_Link.equals(creation))
-			feature = new NetworkLink();
-		return feature;
+			object = new KMLNetworkLink(uri);
+		return object;
+	}
+	@Override
+	public void add(KMLAbstractObject feature) {
+		System.out.println(feature.getClass());
+		
+	}
+	@Override
+	public boolean remove(KMLAbstractObject feature) {
+		return false;
 	}
 }

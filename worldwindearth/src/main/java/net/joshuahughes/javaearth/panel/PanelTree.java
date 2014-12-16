@@ -1,14 +1,16 @@
 package net.joshuahughes.javaearth.panel;
 
+import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
+import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
+
 import java.awt.Component;
+import java.io.File;
 
 import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.tree.TreeCellRenderer;
 
 import com.jidesoft.swing.CheckBoxTree;
-
-import de.micromata.opengis.kml.v_2_2_0.Feature;
 
 public class PanelTree extends CheckBoxTree{
 	private static final long serialVersionUID = -1292091002325519400L;
@@ -21,7 +23,12 @@ public class PanelTree extends CheckBoxTree{
 			public Component getTreeCellRendererComponent(JTree tree,
 					Object value, boolean selected, boolean expanded,
 					boolean leaf, int row, boolean hasFocus) {
-				label.setText(((Feature)value).getName());
+				String text = value.toString();
+				if(value instanceof File)
+					text = ((File)value).getName();
+				if(value instanceof KMLAbstractObject)
+					text = ((KMLAbstractFeature)value).getName();
+				label.setText(text);
 				return label;
 			}});
 	}
