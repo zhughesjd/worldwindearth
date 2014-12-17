@@ -22,17 +22,19 @@ public class EditorTreeModel extends DefaultTreeModel{
 		for(int index=0;index<type.subtypes.length;index++)
 			insertNodeInto(new DefaultMutableTreeNode(type.subtypes[index],true),root,index);
 	}
-	public boolean add(File file){
-		if(root.getChildCount()<=0)return false;
+	public KMLRoot add(File file){
+		if(root.getChildCount()<=0)return null;
 		DefaultMutableTreeNode child = (DefaultMutableTreeNode) root.getLastChild();
 		DefaultMutableTreeNode grandchild =new DefaultMutableTreeNode(file,true);
 		insertNodeInto(grandchild,child,child.getChildCount());
 		try {
-			add(grandchild,KMLRoot.createAndParse(file).getFeature());
+			KMLRoot value = KMLRoot.createAndParse(file);
+			add(grandchild,value);
+			return value;
 		} catch (IOException | XMLStreamException e) {
 			e.printStackTrace();
 		}
-		return true;
+		return null;
 	}
 	public void add(DefaultMutableTreeNode parent,KMLAbstractObject object){
 		if(object instanceof KMLRoot){

@@ -9,7 +9,7 @@ public enum Reset implements Listener{
 	Tilt,Compass,Tilt_and_Compass;
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		WorldwindEarth.findWindow((Component) e.getSource()).getEarthviewer().setReset(this);
+		WorldwindEarth.findWindow((Component) e.getSource()).getViewer().setReset(this);
 	}
 
 }

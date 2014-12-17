@@ -16,7 +16,7 @@ public enum Create implements Listener{
 	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		WorldwindEarth.findWindow((Component) e.getSource()).getEarthviewer().create(this);
+		WorldwindEarth.findWindow((Component) e.getSource()).getViewer().create(this);
 	}
 
 }

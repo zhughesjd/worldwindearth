@@ -1,5 +1,7 @@
 package net.joshuahughes.worldwindearth.panel;
 
+import gov.nasa.worldwind.ogc.kml.KMLRoot;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -17,6 +19,8 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
+import net.joshuahughes.worldwindearth.WorldwindEarth;
 
 
 
@@ -96,6 +100,8 @@ public class Panel extends JPanel{
 		}
 	}
 	public void open(File kmlFile) {
-		editorMap.get(EditorTreeModel.Type.Places).add(kmlFile);
+		KMLRoot root = editorMap.get(EditorTreeModel.Type.Places).add(kmlFile);
+		WorldwindEarth.findWindow((Component)this).getViewer().add(root);
+
 	}
 }

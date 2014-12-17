@@ -9,7 +9,7 @@ public enum Show_Navigation implements Listener{
 	Automatically,Always,Compass_Only,Never;
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		WorldwindEarth.findWindow((Component) e.getSource()).getEarthviewer().setShowNavigation(this);
+		WorldwindEarth.findWindow((Component) e.getSource()).getViewer().setShowNavigation(this);
 	}
 
 }

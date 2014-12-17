@@ -8,6 +8,7 @@ import java.io.File;
 
 import javax.swing.JLabel;
 import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
 
 import com.jidesoft.swing.CheckBoxTree;
@@ -24,6 +25,8 @@ public class PanelTree extends CheckBoxTree{
 					Object value, boolean selected, boolean expanded,
 					boolean leaf, int row, boolean hasFocus) {
 				String text = value.toString();
+				if(value instanceof DefaultMutableTreeNode)
+					value = ((DefaultMutableTreeNode)value).getUserObject();
 				if(value instanceof File)
 					text = ((File)value).getName();
 				if(value instanceof KMLAbstractObject)

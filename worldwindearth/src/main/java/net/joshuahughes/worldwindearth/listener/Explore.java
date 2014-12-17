@@ -9,7 +9,7 @@ public enum Explore implements Listener{
 	Earth,Sky,Mars,Moon;
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		WorldwindEarth.findWindow((Component) e.getSource()).getEarthviewer().setExplore(this);
+		WorldwindEarth.findWindow((Component) e.getSource()).getViewer().setExplore(this);
 	}
 
 }

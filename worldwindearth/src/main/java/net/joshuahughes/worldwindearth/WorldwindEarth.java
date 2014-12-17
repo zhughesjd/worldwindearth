@@ -17,14 +17,13 @@ import net.joshuahughes.worldwindearth.menubar.MenuBar;
 import net.joshuahughes.worldwindearth.panel.Panel;
 import net.joshuahughes.worldwindearth.toolbar.ToolBar;
 import net.joshuahughes.worldwindearth.viewer.Viewer;
-import net.joshuahughes.worldwindearth.viewer.worldwind.WorldwindViewer;
 
 public class WorldwindEarth extends JFrame{
 	private static final long serialVersionUID = -5689158502214134655L;
 	MenuBar menubar = new MenuBar();
 	Panel panel = new Panel();
 	ToolBar toolbar = new ToolBar();
-	Viewer viewer = new WorldwindViewer();
+	Viewer viewer = new Viewer();
 	JPanel toolBarEarthPanel = new JPanel(new BorderLayout());
 	JSplitPane panelToolBarEarthPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,panel,toolBarEarthPanel);
 	public WorldwindEarth(){
@@ -44,7 +43,7 @@ public class WorldwindEarth extends JFrame{
 	public ToolBar getToolBar() {
 		return toolbar;
 	}
-	public Viewer getEarthviewer() {
+	public Viewer getViewer() {
 		return viewer;
 	}
 	public static void main(String[] args){
