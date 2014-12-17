@@ -101,7 +101,7 @@ public class Panel extends JPanel{
 	}
 	public void open(File kmlFile) {
 		KMLRoot root = editorMap.get(EditorTreeModel.Type.Places).add(kmlFile);
-		WorldwindEarth.findWindow((Component)this).getViewer().add(root);
+		WorldwindEarth.findWindow(this).getViewer().add(root);
 
 	}
 }
