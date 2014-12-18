@@ -33,7 +33,7 @@ import java.awt.Component;
 
 import javax.swing.JPanel;
 
-import net.joshuahughes.worldwindearth.listener.Create;
+import net.joshuahughes.worldwindearth.listener.Add;
 import net.joshuahughes.worldwindearth.listener.Explore;
 import net.joshuahughes.worldwindearth.listener.Overlay;
 import net.joshuahughes.worldwindearth.listener.Reset;
@@ -108,24 +108,24 @@ public class Viewer extends JPanel{
 	public void setExplore(Explore explore) {
 	}
 
-	public KMLAbstractObject create(Create creation) {
+	public KMLAbstractObject create(Add creation) {
 		KMLAbstractObject object = new KMLAbstractObject() {};
 		String uri = null;
-		if(Create.Placemark.equals(creation))
+		if(Add.Placemark.equals(creation))
 			object = new KMLPoint(uri);
-		if(Create.Path.equals(creation))
+		if(Add.Path.equals(creation))
 			object = new KMLLinearRing(uri);
-		if(Create.Polygon.equals(creation))
+		if(Add.Polygon.equals(creation))
 			object = new KMLPolygon(uri);
-		if(Create.Model.equals(creation))
+		if(Add.Model.equals(creation))
 			object = new KMLModel(uri);
-		if(Create.Tour.equals(creation))
+		if(Add.Tour.equals(creation))
 			object = new GXTour(uri);
-		if(Create.Photo.equals(creation))
+		if(Add.Photo.equals(creation))
 			object = new KMLPhotoOverlay(uri);
-		if(Create.Image_Overlay.equals(creation))
+		if(Add.Image_Overlay.equals(creation))
 			object = new KMLGroundOverlay(uri);
-		if(Create.Network_Link.equals(creation))
+		if(Add.Network_Link.equals(creation))
 			object = new KMLNetworkLink(uri);
 		return object;
 	}

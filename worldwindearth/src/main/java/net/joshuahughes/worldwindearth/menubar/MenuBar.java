@@ -8,7 +8,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 
-import net.joshuahughes.worldwindearth.listener.Create;
+import net.joshuahughes.worldwindearth.listener.Add;
 import net.joshuahughes.worldwindearth.listener.Email;
 import net.joshuahughes.worldwindearth.listener.Listener;
 import net.joshuahughes.worldwindearth.listener.Overlay;
@@ -95,21 +95,7 @@ public class MenuBar extends JMenuBar{
 			null,
 			new MenuItem(Single.Options___)
 	);
-	List<AbstractButton> addList = Arrays.<AbstractButton>asList(
-			new MenuItem(Single.Folder),
-			null,
-			new MenuItem(Create.Placemark),
-			null,
-			new MenuItem(Create.Path),
-			new MenuItem(Create.Polygon),
-			new MenuItem(Create.Model),
-			new MenuItem(Create.Tour),
-			null,
-			new MenuItem(Create.Photo),
-			new MenuItem(Create.Image_Overlay),
-			null,
-			new MenuItem(Create.Network_Link)
-	);
+	List<AbstractButton> addList = createAddList();
 	List<AbstractButton> helpList = Arrays.<AbstractButton>asList(
 			new MenuItem(Single.Help_Resources),
 			new MenuItem(Single.Keyboard_Shortcuts),
@@ -138,6 +124,23 @@ public class MenuBar extends JMenuBar{
 			}
 		}
 	}
+	public static final List<AbstractButton> createAddList() {
+		return Arrays.<AbstractButton>asList(
+				new MenuItem(Add.Folder),
+				null,
+				new MenuItem(Add.Placemark),
+				null,
+				new MenuItem(Add.Path),
+				new MenuItem(Add.Polygon),
+				new MenuItem(Add.Model),
+				new MenuItem(Add.Tour),
+				null,
+				new MenuItem(Add.Photo),
+				new MenuItem(Add.Image_Overlay),
+				null,
+				new MenuItem(Add.Network_Link)
+		);
+	}
 	public AbstractButton get(Listener listener){
 		for(int index=0;index<getMenuCount();index++){
 			JMenu topMenu = (JMenu) getMenu(index);
@@ -159,5 +162,9 @@ public class MenuBar extends JMenuBar{
 				if(button instanceof RadioMenu && ((RadioMenu)button).getSubElements()[0] instanceof RadioButtonMenuItem)
 					((RadioButtonMenuItem)((RadioMenu)button).getSubElements()[0]).doClick();
 			}
+	}
+	public void setAddEnabled(boolean enabled) {
+		for(int index=0;index<this.getMenuCount();index++)
+			this.getMenu(index).setEnabled(enabled);
 	}
 }

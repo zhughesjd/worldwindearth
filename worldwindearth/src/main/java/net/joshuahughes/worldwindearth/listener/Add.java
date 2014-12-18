@@ -3,12 +3,12 @@ package net.joshuahughes.worldwindearth.listener;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 
-import net.joshuahughes.worldwindearth.WorldwindEarth;
+import net.joshuahughes.worldwindearth.WorldWindEarth;
 
-public enum Create implements Listener{
-	Placemark,Path,Polygon,Model,Image_Overlay,GroundOverlay,Tour,Photo,Network_Link;
+public enum Add implements Listener{
+	Folder,Placemark,Path,Polygon,Model,Image_Overlay,GroundOverlay,Tour,Photo,Network_Link;
 	private String tooltip;
-	Create(){
+	Add(){
 		tooltip = (this.name().equals("Tour")?"Record a ":"Add ")+name();
 	}
 	public String getToolTip(){
@@ -16,7 +16,7 @@ public enum Create implements Listener{
 	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		WorldwindEarth.findWindow((Component) e.getSource()).getViewer().create(this);
+		WorldWindEarth.findWindow((Component) e.getSource()).add(this);
 	}
 
 }

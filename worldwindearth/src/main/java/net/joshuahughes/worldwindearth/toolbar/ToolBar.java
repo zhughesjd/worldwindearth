@@ -1,6 +1,7 @@
 package net.joshuahughes.worldwindearth.toolbar;
 
 import java.awt.Component;
+import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,7 +9,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
-import net.joshuahughes.worldwindearth.listener.Create;
+import net.joshuahughes.worldwindearth.listener.Add;
 import net.joshuahughes.worldwindearth.listener.Email;
 import net.joshuahughes.worldwindearth.listener.Listener;
 import net.joshuahughes.worldwindearth.listener.Overlay;
@@ -20,11 +21,11 @@ public class ToolBar extends JToolBar{
 	List<AbstractButton> buttonList = Arrays.<AbstractButton>asList(
 		new ToggleButton(Single.Sidebar),
 		
-		new Button(Create.Placemark),
-		new Button(Create.Polygon),
-		new Button(Create.Path),
-		new Button(Create.Image_Overlay),
-		new Button(Create.Tour),
+		new Button(Add.Placemark),
+		new Button(Add.Polygon),
+		new Button(Add.Path),
+		new Button(Add.Image_Overlay),
+		new Button(Add.Tour),
 		
 		new ToggleButton(Overlay.Historical_Imagery),
 		new ToggleButton(Overlay.Sun),
@@ -59,6 +60,12 @@ public class ToolBar extends JToolBar{
 			
 		}
 		return null;
+	}
+	public void setAddEnabled(boolean enabled) {
+		for(AbstractButton button : buttonList)
+			for(ActionListener al : button.getActionListeners())
+				if(Arrays.asList(Add.values()).contains(al))
+					button.setEnabled(enabled);
 	}
 
 }

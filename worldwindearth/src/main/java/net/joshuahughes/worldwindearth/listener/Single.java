@@ -21,7 +21,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
-import net.joshuahughes.worldwindearth.WorldwindEarth;
+import net.joshuahughes.worldwindearth.WorldWindEarth;
 
 public enum Single implements Listener{
 	Open___{
@@ -39,7 +39,7 @@ public enum Single implements Listener{
 				}
 			});
 			if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
-				WorldwindEarth.findWindow((Component) e.getSource()).getPanel().open(chooser.getSelectedFile());
+				WorldWindEarth.findWindow((Component) e.getSource()).open(chooser.getSelectedFile());
 		}
 	},
 	Revert{
@@ -81,7 +81,7 @@ public enum Single implements Listener{
 	Exit{
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			WorldwindEarth.findWindow((AbstractButton) e.getSource()).exit();
+			WorldWindEarth.findWindow((AbstractButton) e.getSource()).exit();
 		}
 	},
 	Cut{
@@ -105,7 +105,7 @@ public enum Single implements Listener{
 	Copy_Image{
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			WorldwindEarth frame = WorldwindEarth.findWindow((Component) e.getSource());
+			WorldWindEarth frame = WorldWindEarth.findWindow((Component) e.getSource());
 			Component panel = frame.getViewer().getViewer();
 			BufferedImage image = new BufferedImage(panel.getWidth(), panel.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
 			Graphics2D g2d = image.createGraphics();
@@ -192,7 +192,7 @@ public enum Single implements Listener{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() instanceof AbstractButton){
-				WorldwindEarth.findWindow((AbstractButton) e.getSource()).toolbar(((AbstractButton)e.getSource()).isSelected());
+				WorldWindEarth.findWindow((AbstractButton) e.getSource()).toolbar(((AbstractButton)e.getSource()).isSelected());
 			}
 		}
 	},
@@ -200,7 +200,7 @@ public enum Single implements Listener{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() instanceof AbstractButton){
-				WorldwindEarth.findWindow((AbstractButton) e.getSource()).sidebar(((AbstractButton)e.getSource()).isSelected());
+				WorldWindEarth.findWindow((AbstractButton) e.getSource()).sidebar(((AbstractButton)e.getSource()).isSelected());
 			}
 		}
 	},
@@ -209,7 +209,7 @@ public enum Single implements Listener{
 		private Point location;
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JFrame frame = WorldwindEarth.findWindow((Component) e.getSource());
+			JFrame frame = WorldWindEarth.findWindow((Component) e.getSource());
 			GraphicsEnvironment ge=GraphicsEnvironment.getLocalGraphicsEnvironment();
 			GraphicsDevice device=ge.getDefaultScreenDevice();
 			Window fsw = device.getFullScreenWindow();
@@ -238,17 +238,19 @@ public enum Single implements Listener{
 			System.out.println(this.name());
 		}
 	},
-	Folder{
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			WorldwindEarth.findWindow((Component) e.getSource()).getPanel().addNewFolder();
-			
-		}
-	},
+//	Folder{
+//		@Override
+//		public void actionPerformed(ActionEvent e) {
+//			WorldwindEarth.findWindow((Component) e.getSource()).getPanel().addNewFolder();
+//			
+//		}
+//	},
 	Ruler{
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			System.out.println(this.name());			
+			if(e.getSource() instanceof AbstractButton){
+				WorldWindEarth.findWindow((AbstractButton) e.getSource()).ruler(((AbstractButton)e.getSource()).isSelected());
+			}
 		}
 	},
 	GPS{
@@ -324,6 +326,12 @@ public enum Single implements Listener{
 		}
 	},
 	About_Google_Earth{
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			System.out.println(this.name());			
+		}
+	},
+	Email___{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			System.out.println(this.name());			

@@ -8,13 +8,19 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 
+import javax.swing.AbstractButton;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
+import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+
+import net.joshuahughes.worldwindearth.listener.Save;
+import net.joshuahughes.worldwindearth.listener.Single;
+import net.joshuahughes.worldwindearth.menubar.MenuBar;
+import net.joshuahughes.worldwindearth.menubar.MenuItem;
 
 import com.jidesoft.swing.CheckBoxTree;
 
@@ -53,9 +59,30 @@ public class PanelTree extends CheckBoxTree{
 				Object object = path.getLastPathComponent();
 				if(object instanceof DefaultMutableTreeNode){
 					Object userObject = ((DefaultMutableTreeNode)object).getUserObject();
-					String label = "popup: " + userObject.getClass();
+					boolean isNotType = !(userObject instanceof EditorTreeModel.Type);
 					JPopupMenu popup = new JPopupMenu();
-					popup.add(new JMenuItem(label));
+					JMenu add = new JMenu("Add");
+					for(AbstractButton button : MenuBar.createAddList()){
+						if(button == null){add.addSeparator();continue;}
+						add.add(button);
+					}
+					popup.add(add);
+					popup.addSeparator();
+					if(isNotType)popup.add(new MenuItem(Single.Cut));
+					popup.add(new MenuItem(Single.Copy));
+					if(isNotType)popup.add(new MenuItem(Single.Delete));
+					popup.add(new MenuItem(Single.Delete_Contents));
+					popup.addSeparator();
+					popup.add(new MenuItem(Single.Rename));
+					popup.addSeparator();
+					popup.add(new MenuItem(Save.Save_Place_As___));
+					if(isNotType)popup.add(new MenuItem(Single.Post_to_Google_Earth_Community_Forum));
+					popup.add(new MenuItem(Single.Email___));
+					popup.addSeparator();
+					popup.add(new MenuItem(Single.Snapshot_View));
+					if(isNotType)popup.add(new MenuItem(Single.Sort_A__Z));
+					if(isNotType)popup.addSeparator();
+					if(isNotType)popup.add(new MenuItem(Single.Properties));
 					popup.show(tree, x, y);
 				}
 			}

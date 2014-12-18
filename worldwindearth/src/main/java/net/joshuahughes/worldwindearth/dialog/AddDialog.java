@@ -1,9 +1,15 @@
 package net.joshuahughes.worldwindearth.dialog;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+
+import net.joshuahughes.worldwindearth.WorldWindEarth;
+import net.joshuahughes.worldwindearth.listener.Add;
 
 public class AddDialog extends JDialog{
 	private static final long serialVersionUID = 881876593112086204L;
@@ -11,7 +17,21 @@ public class AddDialog extends JDialog{
 	JTextArea comments = new JTextArea();
 	JButton okButton = new JButton("Ok");
 	JButton cancelButton = new JButton("Cancel");
-	public AddDialog() {
-		setTitle("NASA Earth - New "+this.getClass().getSimpleName());
+	WorldWindEarth earth;
+	public AddDialog(WorldWindEarth earth) {
+		super(earth,false);
+		this.earth = earth;
+		setSize(500,1000);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				AddDialog.this.earth.setAddEnabled(true);
+			}
+		});
+
+	}
+	public void set(Add add){
+		setTitle("World Wind Earth - New "+add.name());
+		earth.setAddEnabled(false);
 	}
 }
