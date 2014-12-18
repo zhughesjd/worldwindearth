@@ -20,8 +20,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import net.joshuahughes.worldwindearth.WorldWindEarth;
-
 
 
 public class Panel extends JPanel{
@@ -99,10 +97,8 @@ public class Panel extends JPanel{
 			return this.box.isSelected();
 		}
 	}
-	public void open(File kmlFile) {
-		KMLRoot root = editorMap.get(EditorTreeModel.Type.Places).add(kmlFile);
-		WorldWindEarth.findWindow(this).getViewer().add(root);
-
+	public KMLRoot open(File kmlFile) {
+		return editorMap.get(EditorTreeModel.Type.Places).add(kmlFile);
 	}
 	public void setAddEnabled(boolean enabled) {
 		treeMap.get(EditorTreeModel.Type.Places).setEnabled(enabled);

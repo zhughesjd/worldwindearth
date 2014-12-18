@@ -1,5 +1,7 @@
 package net.joshuahughes.worldwindearth;
 
+import gov.nasa.worldwind.ogc.kml.KMLRoot;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -91,7 +93,8 @@ public class WorldWindEarth extends JFrame{
 		}
 	}
 	public void open(File kmlFile) {
-		panel.open(kmlFile);
+		KMLRoot root = panel.open(kmlFile);
+		viewer.add(root);
 	}
 	public void add(Add add) {
 		addDialog.set(add);
