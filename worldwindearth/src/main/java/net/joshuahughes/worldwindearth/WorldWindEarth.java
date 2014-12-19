@@ -14,8 +14,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.WindowConstants;
 
-import net.joshuahughes.worldwindearth.dialog.AddDialog;
 import net.joshuahughes.worldwindearth.dialog.RulerDialog;
+import net.joshuahughes.worldwindearth.dialog.addedit.AddEditDialog;
 import net.joshuahughes.worldwindearth.listener.Add;
 import net.joshuahughes.worldwindearth.listener.Overlay;
 import net.joshuahughes.worldwindearth.listener.Single;
@@ -32,7 +32,7 @@ public class WorldWindEarth extends JFrame{
 	Viewer viewer = new Viewer();
 	JPanel toolBarEarthPanel = new JPanel(new BorderLayout());
 	JSplitPane panelToolBarEarthPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,panel,toolBarEarthPanel);
-	AddDialog addDialog = new AddDialog(this);
+	AddEditDialog addDialog = new AddEditDialog(this);
 	RulerDialog rulerDialog = new RulerDialog(this);
 	public WorldWindEarth(){
 		setTitle("Worldwind Earth");

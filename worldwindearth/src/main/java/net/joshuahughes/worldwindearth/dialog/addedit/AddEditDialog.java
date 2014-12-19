@@ -1,4 +1,4 @@
-package net.joshuahughes.worldwindearth.dialog;
+package net.joshuahughes.worldwindearth.dialog.addedit;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -11,21 +11,21 @@ import javax.swing.JTextField;
 import net.joshuahughes.worldwindearth.WorldWindEarth;
 import net.joshuahughes.worldwindearth.listener.Add;
 
-public class AddDialog extends JDialog{
+public class AddEditDialog extends JDialog{
 	private static final long serialVersionUID = 881876593112086204L;
 	JTextField name = new JTextField("Untitled");
 	JTextArea comments = new JTextArea();
 	JButton okButton = new JButton("Ok");
 	JButton cancelButton = new JButton("Cancel");
 	WorldWindEarth earth;
-	public AddDialog(WorldWindEarth earth) {
+	public AddEditDialog(WorldWindEarth earth) {
 		super(earth,false);
 		this.earth = earth;
 		setSize(500,1000);
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				AddDialog.this.earth.setAddEnabled(true);
+				AddEditDialog.this.earth.setAddEnabled(true);
 			}
 		});
 
