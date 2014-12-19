@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 import net.joshuahughes.worldwindearth.WorldWindEarth;
 
 public enum Add implements Listener{
-	Folder,Placemark,Path,Polygon,Model,Image_Overlay,GroundOverlay,Tour,Photo,Network_Link;
+	Folder,Placemark,Path,Polygon,Model,Tour,Photo,Image_Overlay,Network_Link;
 	private String tooltip;
 	Add(){
 		tooltip = (this.name().equals("Tour")?"Record a ":"Add ")+name();

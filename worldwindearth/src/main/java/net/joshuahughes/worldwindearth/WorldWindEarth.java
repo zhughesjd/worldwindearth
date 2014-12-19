@@ -1,5 +1,13 @@
 package net.joshuahughes.worldwindearth;
 
+import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
+import gov.nasa.worldwind.ogc.kml.KMLFolder;
+import gov.nasa.worldwind.ogc.kml.KMLGroundOverlay;
+import gov.nasa.worldwind.ogc.kml.KMLLineString;
+import gov.nasa.worldwind.ogc.kml.KMLNetworkLink;
+import gov.nasa.worldwind.ogc.kml.KMLPhotoOverlay;
+import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
+import gov.nasa.worldwind.ogc.kml.KMLPolygon;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 
 import java.awt.BorderLayout;
@@ -32,7 +40,6 @@ public class WorldWindEarth extends JFrame{
 	Viewer viewer = new Viewer();
 	JPanel toolBarEarthPanel = new JPanel(new BorderLayout());
 	JSplitPane panelToolBarEarthPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,panel,toolBarEarthPanel);
-	AddEditDialog addDialog = new AddEditDialog(this);
 	RulerDialog rulerDialog = new RulerDialog(this);
 	public WorldWindEarth(){
 		setTitle("Worldwind Earth");
@@ -97,8 +104,17 @@ public class WorldWindEarth extends JFrame{
 		viewer.add(root);
 	}
 	public void add(Add add) {
-		addDialog.set(add);
-		addDialog.setVisible(true);
+		KMLAbstractObject object = null;
+		String uri = null;
+		if(add.equals(Add.Folder))object = new KMLFolder(uri);
+		if(add.equals(Add.Photo))object = new KMLPhotoOverlay(uri);
+		if(add.equals(Add.Image_Overlay))object = new KMLGroundOverlay(uri);
+		if(add.equals(Add.Network_Link))object = new KMLNetworkLink(uri);
+		if(add.equals(Add.Placemark))object = new KMLPlacemark(uri);
+		if(add.equals(Add.Path))object = new KMLLineString(uri);
+		if(add.equals(Add.Polygon))object = new KMLPolygon(uri);
+		if(object!=null)
+			new AddEditDialog(this,"New",object);
 	}
 	public void setAddEnabled(boolean enabled) {
 		this.menubar.setAddEnabled(enabled);
