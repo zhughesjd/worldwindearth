@@ -1,14 +1,16 @@
 package net.joshuahughes.worldwindearth;
 
-import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
+import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
 import gov.nasa.worldwind.ogc.kml.KMLFolder;
 import gov.nasa.worldwind.ogc.kml.KMLGroundOverlay;
 import gov.nasa.worldwind.ogc.kml.KMLLineString;
+import gov.nasa.worldwind.ogc.kml.KMLModel;
 import gov.nasa.worldwind.ogc.kml.KMLNetworkLink;
 import gov.nasa.worldwind.ogc.kml.KMLPhotoOverlay;
-import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
+import gov.nasa.worldwind.ogc.kml.KMLPoint;
 import gov.nasa.worldwind.ogc.kml.KMLPolygon;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
+import gov.nasa.worldwind.ogc.kml.impl.KMLTraversalContext;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -29,6 +31,7 @@ import net.joshuahughes.worldwindearth.listener.Overlay;
 import net.joshuahughes.worldwindearth.listener.Single;
 import net.joshuahughes.worldwindearth.menubar.MenuBar;
 import net.joshuahughes.worldwindearth.panel.Panel;
+import net.joshuahughes.worldwindearth.support.KMLGeometryPlacemark;
 import net.joshuahughes.worldwindearth.toolbar.ToolBar;
 import net.joshuahughes.worldwindearth.viewer.Viewer;
 
@@ -41,7 +44,9 @@ public class WorldWindEarth extends JFrame{
 	JPanel toolBarEarthPanel = new JPanel(new BorderLayout());
 	JSplitPane panelToolBarEarthPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,panel,toolBarEarthPanel);
 	RulerDialog rulerDialog = new RulerDialog(this);
+	KMLTraversalContext tc = new KMLTraversalContext( );
 	public WorldWindEarth(){
+	    tc.initialize( );
 		setTitle("Worldwind Earth");
 		toolBarEarthPanel.add(viewer.getViewer(),BorderLayout.CENTER);
 		setJMenuBar(menubar);
@@ -104,17 +109,21 @@ public class WorldWindEarth extends JFrame{
 		viewer.add(root);
 	}
 	public void add(Add add) {
-		KMLAbstractObject object = null;
+		KMLAbstractFeature feature = null;
 		String uri = null;
-		if(add.equals(Add.Folder))object = new KMLFolder(uri);
-		if(add.equals(Add.Photo))object = new KMLPhotoOverlay(uri);
-		if(add.equals(Add.Image_Overlay))object = new KMLGroundOverlay(uri);
-		if(add.equals(Add.Network_Link))object = new KMLNetworkLink(uri);
-		if(add.equals(Add.Placemark))object = new KMLPlacemark(uri);
-		if(add.equals(Add.Path))object = new KMLLineString(uri);
-		if(add.equals(Add.Polygon))object = new KMLPolygon(uri);
-		if(object!=null)
-			new AddEditDialog(this,"New",object);
+		if(add.equals(Add.Folder))feature = new KMLFolder(uri);
+		if(add.equals(Add.Photo))feature = new KMLPhotoOverlay(uri);
+		if(add.equals(Add.Image_Overlay))feature = new KMLGroundOverlay(uri);
+		if(add.equals(Add.Network_Link))feature = new KMLNetworkLink(uri);
+        if(add.equals(Add.Placemark))feature = new KMLGeometryPlacemark(uri,new KMLPoint(uri));
+        if(add.equals(Add.Path))feature = new KMLGeometryPlacemark(uri,new KMLLineString(uri));
+        if(add.equals(Add.Polygon))feature = new KMLGeometryPlacemark(uri,new KMLPolygon(uri));
+        if(add.equals(Add.Model))feature = new KMLGeometryPlacemark(uri,new KMLModel(uri));
+        
+		if(feature!=null){
+		    feature.setField( "name", add.name( ) );
+		    new AddEditDialog(this,"New",feature);
+		}
 	}
 	public void setAddEnabled(boolean enabled) {
 		this.menubar.setAddEnabled(enabled);
