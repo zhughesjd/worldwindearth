@@ -1,5 +1,6 @@
 package net.joshuahughes.worldwindearth.panel;
 
+import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 
 import java.awt.BorderLayout;
@@ -102,5 +103,8 @@ public class Panel extends JPanel{
 	}
 	public void setAddEnabled(boolean enabled) {
 		treeMap.get(EditorTreeModel.Type.Places).setEnabled(enabled);
+	}
+	public void add(EditorTreeModel.Type type,KMLAbstractFeature feature) {
+		treeMap.get(type).addToSelected(feature);
 	}
 }

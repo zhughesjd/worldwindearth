@@ -30,8 +30,10 @@ import net.joshuahughes.worldwindearth.listener.Add;
 import net.joshuahughes.worldwindearth.listener.Overlay;
 import net.joshuahughes.worldwindearth.listener.Single;
 import net.joshuahughes.worldwindearth.menubar.MenuBar;
+import net.joshuahughes.worldwindearth.panel.EditorTreeModel;
 import net.joshuahughes.worldwindearth.panel.Panel;
 import net.joshuahughes.worldwindearth.support.KMLGeometryPlacemark;
+import net.joshuahughes.worldwindearth.support.Support;
 import net.joshuahughes.worldwindearth.toolbar.ToolBar;
 import net.joshuahughes.worldwindearth.viewer.Viewer;
 
@@ -121,7 +123,7 @@ public class WorldWindEarth extends JFrame{
         if(add.equals(Add.Model))feature = new KMLGeometryPlacemark(uri,new KMLModel(uri));
         
 		if(feature!=null){
-		    feature.setField( "name", add.name( ) );
+		    feature.setField( Support.KMLTag.name.name(), add.name( ).replace('_', ' ') );
 		    new AddEditDialog(this,"New",feature);
 		}
 	}
@@ -129,5 +131,8 @@ public class WorldWindEarth extends JFrame{
 		this.menubar.setAddEnabled(enabled);
 		this.toolbar.setAddEnabled(enabled);
 		this.panel.setAddEnabled(enabled);
+	}
+	public void add(KMLAbstractFeature feature) {
+		panel.add(EditorTreeModel.Type.Places,feature);
 	}
 }

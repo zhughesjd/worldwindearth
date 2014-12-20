@@ -1,10 +1,14 @@
 package net.joshuahughes.worldwindearth.dialog.addedit;
 
+import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
+
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -12,6 +16,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+
+import net.joshuahughes.worldwindearth.support.Support;
 
 public class DescriptionPanel extends AbstractPanel
 {
@@ -24,8 +30,14 @@ public class DescriptionPanel extends AbstractPanel
     JLabel urlLabel = new JLabel("error:");
     JPanel urlPanel = new JPanel(new BorderLayout());
     JTextArea descriptionArea = new JTextArea();
-    public DescriptionPanel(){
+    public DescriptionPanel(final KMLAbstractFeature feature) {
         super(new GridBagLayout( ));
+		descriptionArea.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				feature.setField(Support.KMLTag.description.name(),descriptionArea.getText());
+			}
+		});
         setName("Description");
         JPanel okCancelPanel = new JPanel(new BorderLayout());
         okCancelPanel.add(okButton,BorderLayout.CENTER);
@@ -69,7 +81,7 @@ public class DescriptionPanel extends AbstractPanel
 		});
         doLayout(false);
     }
-    private void doLayout(boolean insertURLPanel){
+	private void doLayout(boolean insertURLPanel){
     	removeAll();
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx=gbc.gridy=0;

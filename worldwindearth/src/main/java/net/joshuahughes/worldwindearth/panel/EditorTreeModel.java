@@ -51,5 +51,6 @@ public class EditorTreeModel extends DefaultTreeModel{
 		}
 		insertNodeInto(new DefaultMutableTreeNode(object,false), parent, parent.getChildCount());
 	}
+
 }
 
