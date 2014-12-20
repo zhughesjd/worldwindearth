@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
 
-public class ExpandedOptionPanel extends UpperPanel
+public class ExpandedOptionPanel extends AbstractPanel
 {
     private static final long serialVersionUID = -1260396815326982917L;
     JCheckBox expandedBox = new JCheckBox("Allow this folder to be expanded",true);

@@ -8,7 +8,7 @@ import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 
-public class ImagePhotoPanel extends UpperPanel
+public class ImagePhotoPanel extends AbstractPanel
 {
     private static final long serialVersionUID = -1260396815326982917L;
     JTextField linkField = new JTextField();

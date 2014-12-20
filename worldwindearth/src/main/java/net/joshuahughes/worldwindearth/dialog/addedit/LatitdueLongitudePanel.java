@@ -6,7 +6,7 @@ import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-public class LatitdueLongitudePanel extends UpperPanel
+public class LatitdueLongitudePanel extends AbstractPanel
 {
     private static final long serialVersionUID = -1260396815326982917L;
     JTextField latField = new JTextField(){private static final long serialVersionUID = 1L;{setName("Latitude");}};

@@ -15,6 +15,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -39,12 +40,10 @@ public class AddEditDialog extends JDialog{
 	JOptionPane pane = new JOptionPane(panel,JOptionPane.PLAIN_MESSAGE,JOptionPane.OK_CANCEL_OPTION);
 	public AddEditDialog(WorldWindEarth earth,String prefix,KMLAbstractFeature feature) {
 		super(earth,false);
-        System.out.println(feature);
-        System.out.println(feature.getName( ));
 		this.earth = earth;
 		namePanel.setLayout(new BorderLayout());
         namePanel.add(new JLabel("Name:"),BorderLayout.WEST);
-        nameField.setText( "Untitled "+feature.getName( ) );
+        nameField.setText( "Untitled "+feature.getField("name").toString().replace("_", " "));
 		namePanel.add(nameField,BorderLayout.CENTER);
 		if(feature instanceof KMLPlacemark && ((KMLPlacemark)feature).getGeometry( ) instanceof KMLPoint)
 		    namePanel.add(iconButton,BorderLayout.EAST);
@@ -73,13 +72,15 @@ public class AddEditDialog extends JDialog{
 				AddEditDialog.this.earth.setAddEnabled(true);
 			}
 		});
-		setTitle("World Wind Earth - "+prefix+" "+feature.getName( ).replace( "_"," " ));
+		setTitle("World Wind Earth - "+prefix+" "+feature.getField("name").toString().replace( "_"," " ));
 		earth.setAddEnabled(false);
 		setVisible(true);
 	}
     private JPanel[] getPanels( KMLAbstractFeature feature )
     {
-        return new JPanel[]{new JPanel()};
+    	ArrayList<JPanel> panelList = new ArrayList<JPanel>();
+    	panelList.add(new DescriptionPanel());
+        return panelList.toArray(new JPanel[0]);
     }
     private JPanel getPanel( KMLAbstractFeature feature )
     {
