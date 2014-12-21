@@ -4,6 +4,7 @@ import gov.nasa.worldwind.BasicModel;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.event.SelectListener;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.LatLonGraticuleLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.RenderableLayer;
@@ -137,5 +138,8 @@ public class Viewer extends JPanel{
 	}
 	public boolean remove(KMLAbstractObject feature) {
 		return false;
+	}
+	public Position getPosition() {
+		return wwd.getView().getCurrentEyePosition();
 	}
 }

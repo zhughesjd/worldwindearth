@@ -4,10 +4,8 @@ import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
 import gov.nasa.worldwind.ogc.kml.KMLFolder;
 import gov.nasa.worldwind.ogc.kml.KMLGroundOverlay;
 import gov.nasa.worldwind.ogc.kml.KMLLineString;
-import gov.nasa.worldwind.ogc.kml.KMLModel;
 import gov.nasa.worldwind.ogc.kml.KMLNetworkLink;
 import gov.nasa.worldwind.ogc.kml.KMLPhotoOverlay;
-import gov.nasa.worldwind.ogc.kml.KMLPoint;
 import gov.nasa.worldwind.ogc.kml.KMLPolygon;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 import gov.nasa.worldwind.ogc.kml.impl.KMLTraversalContext;
@@ -32,6 +30,8 @@ import net.joshuahughes.worldwindearth.listener.Single;
 import net.joshuahughes.worldwindearth.menubar.MenuBar;
 import net.joshuahughes.worldwindearth.panel.EditorTreeModel;
 import net.joshuahughes.worldwindearth.panel.Panel;
+import net.joshuahughes.worldwindearth.support.KMLEditableModel;
+import net.joshuahughes.worldwindearth.support.KMLEditablePoint;
 import net.joshuahughes.worldwindearth.support.KMLGeometryPlacemark;
 import net.joshuahughes.worldwindearth.support.Support;
 import net.joshuahughes.worldwindearth.toolbar.ToolBar;
@@ -117,10 +117,10 @@ public class WorldWindEarth extends JFrame{
 		if(add.equals(Add.Photo))feature = new KMLPhotoOverlay(uri);
 		if(add.equals(Add.Image_Overlay))feature = new KMLGroundOverlay(uri);
 		if(add.equals(Add.Network_Link))feature = new KMLNetworkLink(uri);
-        if(add.equals(Add.Placemark))feature = new KMLGeometryPlacemark(uri,new KMLPoint(uri));
+        if(add.equals(Add.Placemark))feature = new KMLGeometryPlacemark(uri,new KMLEditablePoint(uri,viewer.getPosition()));
         if(add.equals(Add.Path))feature = new KMLGeometryPlacemark(uri,new KMLLineString(uri));
         if(add.equals(Add.Polygon))feature = new KMLGeometryPlacemark(uri,new KMLPolygon(uri));
-        if(add.equals(Add.Model))feature = new KMLGeometryPlacemark(uri,new KMLModel(uri));
+        if(add.equals(Add.Model))feature = new KMLGeometryPlacemark(uri,new KMLEditableModel(uri,viewer.getPosition()));
         
 		if(feature!=null){
 		    feature.setField( Support.KMLTag.name.name(), add.name( ).replace('_', ' ') );

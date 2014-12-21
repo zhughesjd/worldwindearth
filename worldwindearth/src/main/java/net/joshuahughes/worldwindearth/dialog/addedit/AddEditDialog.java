@@ -29,6 +29,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
 import net.joshuahughes.worldwindearth.WorldWindEarth;
+import net.joshuahughes.worldwindearth.support.KMLGeometryPlacemark;
 import net.joshuahughes.worldwindearth.support.Support;
 
 public class AddEditDialog extends JDialog{
@@ -129,9 +130,9 @@ public class AddEditDialog extends JDialog{
     {
         if(feature instanceof KMLFolder || feature instanceof KMLNetworkLink)return new ExpandedOptionPanel( );
         if(feature instanceof KMLPhotoOverlay || feature instanceof KMLGroundOverlay)return new ImagePhotoPanel( );
-        if(feature instanceof KMLPlacemark){
-            KMLPlacemark placemark = ( KMLPlacemark ) feature;
-            if(placemark.getGeometry( ) instanceof KMLPoint || placemark.getGeometry( ) instanceof KMLModel) return new LatitdueLongitudePanel( );
+        if(feature instanceof KMLGeometryPlacemark){
+        	KMLGeometryPlacemark placemark = ( KMLGeometryPlacemark ) feature;
+            if(placemark.getGeometry( ) instanceof KMLPoint || placemark.getGeometry( ) instanceof KMLModel) return new LatitdueLongitudePanel(placemark);
         }
         return new JPanel();
     }

@@ -8,6 +8,9 @@ public class KMLGeometryPlacemark extends KMLPlacemark
     public KMLGeometryPlacemark( String namespaceURI,KMLAbstractGeometry geometry)
     {
         super( namespaceURI );
-        super.setGeometry( geometry );
+        setGeometry( geometry );
+    }
+    public void setGeometry(KMLAbstractGeometry geometry){
+    	super.setGeometry(geometry);
     }
 }
