@@ -9,8 +9,10 @@ package net.joshuahughes.worldwindearth.support;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.ogc.kml.KMLAbstractContainer;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
 import gov.nasa.worldwind.ogc.kml.KMLFolder;
+import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 import gov.nasa.worldwind.ogc.kml.impl.KMLController;
 import gov.nasa.worldwind.render.Offset;
@@ -29,6 +31,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -70,9 +73,10 @@ public class KMLViewer extends ApplicationTemplate
         protected HotSpotController hotSpotController;
         protected KMLApplicationController kmlAppController;
         protected BalloonController balloonController;
-        KMLTreeModel model = new KMLTreeModel(new KMLFolder(null));
+        KMLTreeModel model = new KMLTreeModel(KMLTreeModel.Type.Places);
         public AppFrame()
         {
+            
             super(true, false, false); // Don't include the layer panel; we're using the on-screen layer tree.
 
             // Add the on-screen layer tree, refreshing model with the WorldWindow's current layer list. We
@@ -129,6 +133,19 @@ public class KMLViewer extends ApplicationTemplate
                     System.out.println(e);
                 }
             });
+            try
+            {
+                model.add( KMLRoot.createAndParse(  new File("C:/users/hughes/desktop/doc.kml" )).getFeature( ) );
+            }
+            catch ( Exception e1 )
+            {
+                e1.printStackTrace();
+            }
+            System.out.println(((KMLFolder)((DefaultMutableTreeNode)model.getRoot( )).getUserObject( )).getName( ));
+            KMLFolder sub1 = ( KMLFolder ) ((KMLFolder)((DefaultMutableTreeNode)model.getRoot( )).getUserObject( )).getFeatures( ).get( 1 );
+            System.out.println(sub1.getFeatures( ).get( 0 ).getName( ));
+            addKMLLayer(((KMLAbstractContainer)((DefaultMutableTreeNode)model.getRoot( )).getUserObject( )).getRoot( ));
+
         }
 
         /**
@@ -145,7 +162,6 @@ public class KMLViewer extends ApplicationTemplate
         {
             // Create a KMLController to adapt the KMLRoot to the World Wind renderable interface.
             KMLController kmlController = new KMLController(kmlRoot);
-
             // Adds a new layer containing the KMLRoot to the end of the WorldWindow's layer list. This
             // retrieves the layer name from the KMLRoot's DISPLAY_NAME field.
             RenderableLayer layer = new RenderableLayer();
@@ -232,8 +248,10 @@ public class KMLViewer extends ApplicationTemplate
                 {
                     public void run()
                     {
-                        appFrame.addKMLLayer(finalKMLRoot);
-                        appFrame.model.add((DefaultMutableTreeNode) appFrame.model.getRoot(), finalKMLRoot.getFeature());
+//                        DefaultMutableTreeNode kmlRootNode = appFrame.model.add(createPlacemark(finalKMLRoot.getNamespaceURI( ),-95,39) );
+                        appFrame.model.add(finalKMLRoot.getFeature());
+                        (( KMLFolder ) ((DefaultMutableTreeNode)appFrame.model.getRoot( )).getUserObject( )).getRoot( );
+//                        appFrame.addKMLLayer( finalKMLRoot );
                     }
                 });
             }
@@ -253,10 +271,12 @@ public class KMLViewer extends ApplicationTemplate
          */
         protected KMLRoot parse() throws IOException, XMLStreamException
         {
+            KMLRoot kmlRoot = KMLRoot.create( kmlSource,false );
+            kmlRoot.parse(  );
             // KMLRoot.createAndParse will attempt to parse the document using a namespace aware parser, but if that
             // fails due to a parsing error it will try again using a namespace unaware parser. Note that this second
             // step may require the document to be read from the network again if the kmlSource is a stream.
-            return KMLRoot.createAndParse(this.kmlSource);
+            return kmlRoot;
         }
     }
 
@@ -350,5 +370,17 @@ public class KMLViewer extends ApplicationTemplate
     {
         //noinspection UnusedDeclaration
         start("World Wind KML Viewer", AppFrame.class);
+    }
+    public static KMLPlacemark createPlacemark(String uri,double lon,double lat){
+        try
+        {
+            ByteArrayInputStream kmlString = new ByteArrayInputStream(("<kml xmlns=\""+uri+"\"><Placemark><name>Untitled Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark></kml>").getBytes( ));
+            return ( KMLPlacemark ) KMLRoot.createAndParse(kmlString).getFeature( );
+        }
+        catch ( Exception e )
+        {
+            e.printStackTrace( );
+        }
+        return null;
     }
 }
