@@ -375,7 +375,8 @@ public class KMLViewer extends ApplicationTemplate
 		try
 		{
 			ByteArrayInputStream kmlString = new ByteArrayInputStream(("<kml xmlns=\""+uri+"\"><Placemark><name>NEW Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark></kml>").getBytes( ));
-			return ( KMLPlacemark ) KMLRoot.createAndParse(kmlString).getFeature( );
+			KMLPlacemark placemark = ( KMLPlacemark ) KMLRoot.createAndParse(kmlString).getFeature( );
+			return placemark;
 		}
 		catch ( Exception e )
 		{

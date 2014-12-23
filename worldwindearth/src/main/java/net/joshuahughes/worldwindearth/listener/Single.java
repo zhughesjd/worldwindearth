@@ -106,7 +106,7 @@ public enum Single implements Listener{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			WorldWindEarth frame = WorldWindEarth.findWindow((Component) e.getSource());
-			Component panel = frame.getViewer().getViewer();
+			Component panel = frame.getViewer();
 			BufferedImage image = new BufferedImage(panel.getWidth(), panel.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
 			Graphics2D g2d = image.createGraphics();
 			panel.paint(g2d);

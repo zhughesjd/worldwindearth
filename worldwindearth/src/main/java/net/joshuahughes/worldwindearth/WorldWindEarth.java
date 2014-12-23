@@ -50,7 +50,7 @@ public class WorldWindEarth extends JFrame{
 	public WorldWindEarth(){
 	    tc.initialize( );
 		setTitle("Worldwind Earth");
-		toolBarEarthPanel.add(viewer.getViewer(),BorderLayout.CENTER);
+		toolBarEarthPanel.add(viewer,BorderLayout.CENTER);
 		setJMenuBar(menubar);
 		for(Overlay overlay : Overlay.values())
 			viewer.setVisible(overlay,menubar.get(overlay).isSelected());

@@ -16,25 +16,15 @@ import gov.nasa.worldwind.layers.ViewControlsSelectListener;
 import gov.nasa.worldwind.layers.WorldMapLayer;
 import gov.nasa.worldwind.layers.Earth.BMNGOneImage;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
-import gov.nasa.worldwind.ogc.kml.KMLGroundOverlay;
-import gov.nasa.worldwind.ogc.kml.KMLLinearRing;
-import gov.nasa.worldwind.ogc.kml.KMLModel;
-import gov.nasa.worldwind.ogc.kml.KMLNetworkLink;
-import gov.nasa.worldwind.ogc.kml.KMLPhotoOverlay;
-import gov.nasa.worldwind.ogc.kml.KMLPoint;
-import gov.nasa.worldwind.ogc.kml.KMLPolygon;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
-import gov.nasa.worldwind.ogc.kml.gx.GXTour;
 import gov.nasa.worldwind.ogc.kml.impl.KMLController;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwindx.examples.util.StatusLayer;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 
 import javax.swing.JPanel;
 
-import net.joshuahughes.worldwindearth.listener.Add;
 import net.joshuahughes.worldwindearth.listener.Explore;
 import net.joshuahughes.worldwindearth.listener.Overlay;
 import net.joshuahughes.worldwindearth.listener.Reset;
@@ -84,62 +74,33 @@ public class Viewer extends JPanel{
 		if(layer !=null)layer.setEnabled(show);
 		wwd.redraw();
 	}
-	public void setVisible(Class<Layer> clazz,boolean show){
-	}
-	public void add(String wmsPath) {
-	}
 
-	public boolean remove(String wmsPath) {
-		return false;
-	}
 
-	public Component getViewer() {
-		return this;
-	}
-
-	public void setViewSize(View_Size viewSize) {
-	}
-
-	public void setShowNavigation(Show_Navigation showNavigation) {
-	}
-
-	public void setReset(Reset reset) {
-	}
-
-	public void setExplore(Explore explore) {
-	}
-
-	public KMLAbstractObject create(Add creation) {
-		KMLAbstractObject object = new KMLAbstractObject() {};
-		String uri = null;
-		if(Add.Placemark.equals(creation))
-			object = new KMLPoint(uri);
-		if(Add.Path.equals(creation))
-			object = new KMLLinearRing(uri);
-		if(Add.Polygon.equals(creation))
-			object = new KMLPolygon(uri);
-		if(Add.Model.equals(creation))
-			object = new KMLModel(uri);
-		if(Add.Tour.equals(creation))
-			object = new GXTour(uri);
-		if(Add.Photo.equals(creation))
-			object = new KMLPhotoOverlay(uri);
-		if(Add.Image_Overlay.equals(creation))
-			object = new KMLGroundOverlay(uri);
-		if(Add.Network_Link.equals(creation))
-			object = new KMLNetworkLink(uri);
-		return object;
-	}
-	public void add(KMLAbstractObject feature) {
-		if(feature instanceof KMLRoot){
-	        kmlLayer.addRenderable(new KMLController((KMLRoot) feature));
-	        return;
-		}
-	}
+    public void add(KMLRoot kmlRoot) {
+        kmlLayer.addRenderable(new KMLController(kmlRoot));
+    }
 	public boolean remove(KMLAbstractObject feature) {
 		return false;
 	}
 	public Position getPosition() {
 		return wwd.getView().getCurrentEyePosition();
 	}
+    public void add(KMLAbstractObject feature) {
+        if(feature instanceof KMLRoot){
+            kmlLayer.addRenderable(new KMLController((KMLRoot) feature));
+            return;
+        }
+    }
+
+    public void setViewSize(View_Size viewSize) {
+    }
+
+    public void setShowNavigation(Show_Navigation showNavigation) {
+    }
+
+    public void setReset(Reset reset) {
+    }
+
+    public void setExplore(Explore explore) {
+    }
 }
