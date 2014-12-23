@@ -11,7 +11,6 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractContainer;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
-import gov.nasa.worldwind.ogc.kml.KMLFolder;
 import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 import gov.nasa.worldwind.ogc.kml.impl.KMLController;
@@ -135,15 +134,12 @@ public class KMLViewer extends ApplicationTemplate
             });
             try
             {
-                model.add( KMLRoot.createAndParse(  new File("C:/users/hughes/desktop/doc.kml" )).getFeature( ) );
+//                model.add( KMLRoot.createAndParse(  new File("C:/users/sandra/documents/test.kmz" )).getFeature( ) );
             }
             catch ( Exception e1 )
             {
                 e1.printStackTrace();
             }
-            System.out.println(((KMLFolder)((DefaultMutableTreeNode)model.getRoot( )).getUserObject( )).getName( ));
-            KMLFolder sub1 = ( KMLFolder ) ((KMLFolder)((DefaultMutableTreeNode)model.getRoot( )).getUserObject( )).getFeatures( ).get( 1 );
-            System.out.println(sub1.getFeatures( ).get( 0 ).getName( ));
             addKMLLayer(((KMLAbstractContainer)((DefaultMutableTreeNode)model.getRoot( )).getUserObject( )).getRoot( ));
 
         }
@@ -248,10 +244,14 @@ public class KMLViewer extends ApplicationTemplate
                 {
                     public void run()
                     {
-//                        DefaultMutableTreeNode kmlRootNode = appFrame.model.add(createPlacemark(finalKMLRoot.getNamespaceURI( ),-95,39) );
                         appFrame.model.add(finalKMLRoot.getFeature());
-                        (( KMLFolder ) ((DefaultMutableTreeNode)appFrame.model.getRoot( )).getUserObject( )).getRoot( );
-//                        appFrame.addKMLLayer( finalKMLRoot );
+                        try {
+							Thread.sleep(2000l);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+                    	appFrame.model.add(createPlacemark(finalKMLRoot.getNamespaceURI( ),-95,39) );
                     }
                 });
             }
@@ -374,7 +374,7 @@ public class KMLViewer extends ApplicationTemplate
     public static KMLPlacemark createPlacemark(String uri,double lon,double lat){
         try
         {
-            ByteArrayInputStream kmlString = new ByteArrayInputStream(("<kml xmlns=\""+uri+"\"><Placemark><name>Untitled Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark></kml>").getBytes( ));
+            ByteArrayInputStream kmlString = new ByteArrayInputStream(("<kml xmlns=\""+uri+"\"><Placemark><name>NEW Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark></kml>").getBytes( ));
             return ( KMLPlacemark ) KMLRoot.createAndParse(kmlString).getFeature( );
         }
         catch ( Exception e )

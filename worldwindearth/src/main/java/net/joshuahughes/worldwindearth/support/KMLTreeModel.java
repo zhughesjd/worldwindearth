@@ -50,16 +50,21 @@ public class KMLTreeModel extends DefaultTreeModel{
         if(parent.getChildCount( )>0) parent = ( DefaultMutableTreeNode ) parent.getLastChild( );
         add(parent,feature);
     }
-    public void add(DefaultMutableTreeNode parent,KMLAbstractFeature feature){
+	public void add(DefaultMutableTreeNode parent,KMLAbstractFeature feature){
+    	addKML(parent,feature);
+    	addTree(parent,feature);
+    }
+   	private void addKML(DefaultMutableTreeNode parent,KMLAbstractFeature feature){
+    	((KMLAbstractContainer)parent.getUserObject()).addFeature(feature);
+	}
+	private void addTree(DefaultMutableTreeNode parent,KMLAbstractFeature feature){
         if(!parent.getAllowsChildren( )) parent = ( DefaultMutableTreeNode ) parent.getParent( );
-        KMLAbstractContainer parentContainer = ( KMLAbstractContainer ) parent.getUserObject( );
-        parentContainer.addFeature( feature );
         if(feature instanceof KMLAbstractContainer){
             KMLAbstractContainer kmlContainer = (KMLAbstractContainer)feature;
             DefaultMutableTreeNode container = new DefaultMutableTreeNode(kmlContainer,true);
             insertNodeInto(container,parent,parent.getChildCount());
             for(KMLAbstractFeature kmlChild : kmlContainer.getFeatures())
-                add(container,kmlChild);
+                addTree(container,kmlChild);
         }
         else
             insertNodeInto(new DefaultMutableTreeNode(feature,false), parent, parent.getChildCount());
