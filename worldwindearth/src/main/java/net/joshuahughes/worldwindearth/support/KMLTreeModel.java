@@ -2,6 +2,7 @@ package net.joshuahughes.worldwindearth.support;
 
 import gov.nasa.worldwind.ogc.kml.KMLAbstractContainer;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
+import gov.nasa.worldwind.ogc.kml.KMLFolder;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 
 import java.io.ByteArrayInputStream;
@@ -12,8 +13,11 @@ import javax.swing.tree.DefaultTreeModel;
 public class KMLTreeModel extends DefaultTreeModel{
     public enum Type{MyPlaces,TemporaryPlaces,PrimaryDatabase,Search,Places,Layers}
     private static final long serialVersionUID = -1910087161141056231L;
+    private static DefaultMutableTreeNode rootNode;
+	private KMLRoot kmlRoot; 
     public KMLTreeModel(Type type) {
-        super(create(type));
+        super(rootNode = create(type));
+        this.kmlRoot = ((KMLFolder)rootNode.getUserObject()).getRoot();
     }
     private static DefaultMutableTreeNode create( Type type )
     {   
@@ -53,6 +57,7 @@ public class KMLTreeModel extends DefaultTreeModel{
 	public void add(DefaultMutableTreeNode parent,KMLAbstractFeature feature){
     	addKML(parent,feature);
     	addTree(parent,feature);
+    	kmlRoot.requestRedraw();
     }
    	private void addKML(DefaultMutableTreeNode parent,KMLAbstractFeature feature){
     	((KMLAbstractContainer)parent.getUserObject()).addFeature(feature);
