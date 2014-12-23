@@ -1,10 +1,13 @@
 package net.joshuahughes.worldwindearth.viewer;
 
 import gov.nasa.worldwind.BasicModel;
+import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.event.SelectListener;
+import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.LatLonGraticuleLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.RenderableLayer;
@@ -24,6 +27,8 @@ import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwindx.examples.util.StatusLayer;
 
 import java.awt.BorderLayout;
+import java.awt.Rectangle;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -85,6 +90,18 @@ public class Viewer extends JPanel{
 	public boolean remove(KMLAbstractObject feature) {
 		return false;
 	}
+	public Sector getViewExtents(){
+        View view = wwd.getView();
+        Rectangle viewport = view.getViewport();
+        ArrayList<LatLon> corners = new ArrayList<LatLon>();
+        corners.add( view.computePositionFromScreenPoint(viewport.getMinX(), viewport.getMinY()));
+        corners.add( view.computePositionFromScreenPoint(viewport.getMinX(), viewport.getMaxY()));
+        corners.add( view.computePositionFromScreenPoint(viewport.getMaxX(), viewport.getMaxY()));
+        corners.add( view.computePositionFromScreenPoint(viewport.getMaxX(), viewport.getMinY()));
+        if(Sector.isSector( corners )) 
+            return Sector.boundingSector(corners);
+        return Sector.FULL_SPHERE;
+	}
 	public Position getPosition() {
 		return wwd.getView().getCurrentEyePosition();
 	}
@@ -108,5 +125,9 @@ public class Viewer extends JPanel{
                 
             }
         }
+    }
+    public WorldWindowGLCanvas getWwd( )
+    {
+        return this.wwd;
     }
 }

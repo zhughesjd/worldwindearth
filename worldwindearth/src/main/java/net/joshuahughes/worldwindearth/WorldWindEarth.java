@@ -1,9 +1,7 @@
 package net.joshuahughes.worldwindearth;
 
-import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
 import gov.nasa.worldwind.ogc.kml.KMLFolder;
-import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 import gov.nasa.worldwind.ogc.kml.impl.KMLTraversalContext;
 
@@ -108,18 +106,8 @@ public class WorldWindEarth extends JFrame{
     }
     public void add(Add add) {
         KMLAbstractFeature feature = create(add);
-        //		if(add.equals(Add.Folder))feature = new KMLFolder(uri);
-        //		if(add.equals(Add.Photo))feature = new KMLPhotoOverlay(uri);
-        //		if(add.equals(Add.Image_Overlay))feature = new KMLGroundOverlay(uri);
-        //		if(add.equals(Add.Network_Link))feature = new KMLNetworkLink(uri);
-        //        if(add.equals(Add.Path))feature = new KMLGeometryPlacemark(uri,new KMLLineString(uri));
-        //        if(add.equals(Add.Polygon))feature = new KMLGeometryPlacemark(uri,new KMLPolygon(uri));
-        //        if(add.equals(Add.Model))feature = new KMLGeometryPlacemark(uri,new KMLEditableModel(uri,viewer.getPosition()));
-
-        if(feature!=null){
-            feature.setField( Support.KMLTag.name.name(), add.name( ).replace('_', ' ') );
-            new AddEditDialog(this,feature);
-        }
+        feature.setField( Support.KMLTag.name.name(), add.name( ).replace('_', ' ') );
+        new AddEditDialog(this,feature);
     }
     private static long id = 0;
     private KMLAbstractFeature create( Add add )
@@ -127,16 +115,28 @@ public class WorldWindEarth extends JFrame{
         try
         {
             String kmlString = "<kml>";
-            if(Add.Placemark.equals( add )){
-                Position position = viewer.getPosition( );
-                double lon = position.getLongitude( ).getDegrees( );
-                double lat = position.getLatitude( ).getDegrees( );
-                kmlString+="<Placemark id=\""+(id++)+"\"><name>Untitled Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark>";
-            }
+            if(Add.Folder.equals( add ))
+                kmlString +="<Folder></Folder>";
+            if(Add.Placemark.equals( add ))
+                kmlString+="<Placemark><Point><coordinates>"+viewer.getPosition( ).getLongitude( ).getDegrees( )+","+viewer.getPosition( ).getLatitude( ).getDegrees( )+",0</coordinates></Point></Placemark>";
+            if(Add.Path.equals( add ))
+                kmlString+="<Placemark><LineString><coordinates></coordinates></LineString></Placemark>";
+            if(Add.Polygon.equals( add ))
+                kmlString+="<Placemark><outerBoundaryIs><LinearRing><coordinates></coordinates></LinearRing></outerBoundaryIs></Placemark>";
+            if(Add.Model.equals( add ))
+                kmlString+="<Placemark><Model><Location><longitude>"+viewer.getPosition( ).getLongitude( ).getDegrees( )+"</longitude><latitude>"+viewer.getPosition( ).getLatitude( ).getDegrees( )+"</latitude><altitude>0</altitude></Location><Orientation><heading>0</heading><tilt>0</tilt><roll>0</roll></Orientation><Scale><x>1</x><y>1</y><z>1</z></Scale><Link></Link></Model></Placemark>";
+            if(Add.Photo.equals( add ))
+                kmlString+="<PhotoOverlay></PhotoOverlay>";
+            if(Add.Image_Overlay.equals( add ))
+                kmlString+="<GroundOverlay><Icon><viewBoundScale>0.75</viewBoundScale></Icon><LatLonBox><north>31.46519058816173</north><south>26.94948039449266</south><east>-100.2544422612532</east><west>-105.4279090375434</west></LatLonBox></GroundOverlay>";
+            if(Add.Network_Link.equals( add ))
+                kmlString+="<NetworkLink><Link></Link></NetworkLink>";
             kmlString+="</kml>";
             ByteArrayInputStream bais = new ByteArrayInputStream(kmlString.getBytes( ));
-            KMLPlacemark placemark = ( KMLPlacemark ) KMLRoot.createAndParse(bais).getFeature( );
-            return placemark;
+            KMLAbstractFeature feature = KMLRoot.createAndParse(bais).getFeature( );
+            feature.setField( Support.KMLTag.name.name( ), "Untitled "+add.name( ).replace( '_', ' ' ) );
+            feature.setField( Support.KMLTag.id.name( ), ""+id++ );
+            return feature;
         }
         catch ( Exception e )
         {

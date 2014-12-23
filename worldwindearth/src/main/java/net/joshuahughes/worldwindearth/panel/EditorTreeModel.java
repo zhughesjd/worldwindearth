@@ -77,4 +77,11 @@ public class EditorTreeModel extends DefaultTreeModel{
         else
             insertNodeInto(new DefaultMutableTreeNode(feature,false), parent, parent.getChildCount());
     }
+    public void removeNodeFromParent( DefaultMutableTreeNode node )
+    {
+        KMLAbstractFeature feature = ( KMLAbstractFeature ) node.getUserObject( );
+        KMLAbstractContainer container = ( KMLAbstractContainer ) ((DefaultMutableTreeNode)node.getParent( )).getUserObject( );
+        container.removeFeature( feature );
+        super.removeNodeFromParent( node );
+    }
 }

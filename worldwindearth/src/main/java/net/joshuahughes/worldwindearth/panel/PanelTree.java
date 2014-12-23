@@ -129,4 +129,8 @@ public class PanelTree extends CheckBoxTree{
 	public EditorTreeModel getModel(){
 	    return ( EditorTreeModel ) super.getModel( );
 	}
+    public void removeSelection( )
+    {
+        getModel().removeNodeFromParent( ( DefaultMutableTreeNode ) this.getSelectionPath( ).getLastPathComponent( ) );
+    }
 }

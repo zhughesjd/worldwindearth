@@ -1,6 +1,21 @@
 package net.joshuahughes.worldwindearth.listener;
 
+import gov.nasa.worldwind.Exportable;
+import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
+import gov.nasa.worldwind.ogc.kml.KMLAbstractGeometry;
+import gov.nasa.worldwind.ogc.kml.KMLGroundOverlay;
+import gov.nasa.worldwind.ogc.kml.KMLLineString;
+import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
+import gov.nasa.worldwind.ogc.kml.KMLPoint;
+import gov.nasa.worldwind.ogc.kml.KMLPolygon;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
+import gov.nasa.worldwind.ogc.kml.impl.KMLExtrudedPolygonImpl;
+import gov.nasa.worldwind.ogc.kml.impl.KMLGroundOverlayPolygonImpl;
+import gov.nasa.worldwind.ogc.kml.impl.KMLLineStringPlacemarkImpl;
+import gov.nasa.worldwind.ogc.kml.impl.KMLPointPlacemarkImpl;
+import gov.nasa.worldwind.ogc.kml.impl.KMLPolygonImpl;
+import gov.nasa.worldwind.ogc.kml.impl.KMLTraversalContext;
+import gov.nasa.worldwindx.examples.kml.KMLDocumentBuilder;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -11,19 +26,32 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 
 import javax.swing.AbstractButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import net.joshuahughes.worldwindearth.WorldWindEarth;
+import net.joshuahughes.worldwindearth.panel.EditorTreeModel;
 import net.joshuahughes.worldwindearth.panel.EditorTreeModel.Type;
 
 public enum Single implements Listener{
@@ -94,13 +122,55 @@ public enum Single implements Listener{
     Cut{
         @Override
         public void actionPerformed(ActionEvent e) {
-            System.out.println(this.name());			
+            Copy.actionPerformed( e );
+            Delete.actionPerformed( e );
         }
     },
     Copy{
         @Override
         public void actionPerformed(ActionEvent e) {
-            System.out.println(this.name());			
+            WorldWindEarth frame = WorldWindEarth.findWindow((Component) e.getSource());
+            DefaultMutableTreeNode node = ( DefaultMutableTreeNode ) frame.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).getSelectionPath( ).getLastPathComponent( );
+            KMLAbstractFeature feature = ( KMLAbstractFeature ) node.getUserObject( );
+            try
+            {
+                Writer stringWriter = new StringWriter();
+                KMLTraversalContext tc = new KMLTraversalContext();
+                KMLDocumentBuilder builder = new KMLDocumentBuilder( stringWriter );
+                Exportable exportable = null;
+                if(feature instanceof KMLGroundOverlay) exportable = new KMLGroundOverlayPolygonImpl( tc, ( KMLGroundOverlay ) feature );
+                if(feature instanceof KMLPlacemark){
+                    KMLPlacemark placemark =( KMLPlacemark ) feature;
+                    KMLAbstractGeometry geometry = placemark.getGeometry( );
+                    if(geometry instanceof KMLPoint) exportable = new KMLPointPlacemarkImpl( tc,placemark,geometry );
+                    if(geometry instanceof KMLLineString) exportable = new KMLLineStringPlacemarkImpl( tc,placemark,geometry );
+                    if(geometry instanceof KMLPolygon){
+                        KMLPolygon polygon = ( KMLPolygon ) geometry;
+                        exportable = polygon.isExtrude( )?new KMLExtrudedPolygonImpl( tc, placemark, geometry ):new KMLPolygonImpl( tc,placemark,geometry );
+                    }
+                }
+
+                if(exportable==null) return;
+                
+                builder.writeObject( exportable );
+                builder.close();
+
+                // Get the exported document as a string
+                String xmlString = stringWriter.toString();
+
+                // Set up a transformer to pretty-print the XML
+                Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+                stringWriter = new StringWriter();
+                transformer.transform(new StreamSource(new StringReader(xmlString)), new StreamResult(stringWriter));
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents( new StringSelection(stringWriter.toString( )),new ClipboardOwner( ){public void lostOwnership( Clipboard clipboard, Transferable contents ){}} );
+            }
+            catch ( Exception e1 )
+            {
+                e1.printStackTrace();
+            }
+
         }
     },
     Copy_As_Tracks{
@@ -137,7 +207,8 @@ public enum Single implements Listener{
     Delete{
         @Override
         public void actionPerformed(ActionEvent e) {
-            System.out.println(this.name());			
+            WorldWindEarth frame = WorldWindEarth.findWindow((Component) e.getSource());
+            frame.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).removeSelection();
         }
     },
     Find{
