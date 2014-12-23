@@ -15,9 +15,11 @@ import gov.nasa.worldwind.layers.ViewControlsLayer;
 import gov.nasa.worldwind.layers.ViewControlsSelectListener;
 import gov.nasa.worldwind.layers.WorldMapLayer;
 import gov.nasa.worldwind.layers.Earth.BMNGOneImage;
+import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 import gov.nasa.worldwind.ogc.kml.impl.KMLController;
+import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwindx.examples.util.StatusLayer;
 
@@ -30,6 +32,7 @@ import net.joshuahughes.worldwindearth.listener.Overlay;
 import net.joshuahughes.worldwindearth.listener.Reset;
 import net.joshuahughes.worldwindearth.listener.Show_Navigation;
 import net.joshuahughes.worldwindearth.listener.View_Size;
+import net.joshuahughes.worldwindearth.panel.EditorTreeModel;
 
 public class Viewer extends JPanel{
 	private static final long serialVersionUID = 8482957233805118951L;
@@ -85,13 +88,6 @@ public class Viewer extends JPanel{
 	public Position getPosition() {
 		return wwd.getView().getCurrentEyePosition();
 	}
-    public void add(KMLAbstractObject feature) {
-        if(feature instanceof KMLRoot){
-            kmlLayer.addRenderable(new KMLController((KMLRoot) feature));
-            return;
-        }
-    }
-
     public void setViewSize(View_Size viewSize) {
     }
 
@@ -102,5 +98,15 @@ public class Viewer extends JPanel{
     }
 
     public void setExplore(Explore explore) {
+    }
+    public void eedit( KMLAbstractFeature feature )
+    {
+        for(Renderable renderable : kmlLayer.getRenderables( )){
+            KMLController controller = ( KMLController ) renderable;
+            KMLRoot kmlRoot = controller.getKmlRoot( );
+            if(kmlRoot.getFeature( ).getName( ).equals( EditorTreeModel.Type.Places)){
+                
+            }
+        }
     }
 }

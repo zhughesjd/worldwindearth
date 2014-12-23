@@ -1,25 +1,24 @@
 package net.joshuahughes.worldwindearth.dialog.addedit;
 
-import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
 import gov.nasa.worldwind.ogc.kml.KMLPoint;
+import gov.nasa.worldwind.ogc.kml.KMLRoot;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.io.ByteArrayInputStream;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-
-import net.joshuahughes.worldwindearth.support.KMLGeometryPlacemark;
-import net.joshuahughes.worldwindearth.support.KMLEditablePoint;
 
 public class LatitdueLongitudePanel extends AbstractPanel
 {
 	private static final long serialVersionUID = -1260396815326982917L;
 	JTextField latField = new JTextField(){private static final long serialVersionUID = 1L;{setName("Latitude");}};
 	JTextField lonField = new JTextField(){private static final long serialVersionUID = 1L;{setName("Longitude");}};
-	public LatitdueLongitudePanel(final KMLGeometryPlacemark placemark){
+	public LatitdueLongitudePanel(final KMLPlacemark placemark){
 		super(new GridBagLayout( ));
 		if(placemark.getGeometry() instanceof KMLPoint){
 			KMLPoint point = (KMLPoint) placemark.getGeometry();
@@ -37,8 +36,7 @@ public class LatitdueLongitudePanel extends AbstractPanel
 					try{
 						double latitude = Double.parseDouble(latField.getText().trim());
 						double longitude = Double.parseDouble(lonField.getText().trim());
-						KMLEditablePoint point = new KMLEditablePoint(null,Position.fromDegrees(latitude, longitude));
-						placemark.setGeometry(point);
+						placemark.applyChange( create(longitude,latitude) );
 					}catch(NumberFormatException exception){
 						latField.setText(lat+"");
 						lonField.setText(lon+"");
@@ -63,4 +61,18 @@ public class LatitdueLongitudePanel extends AbstractPanel
 			gbc.gridy++;
 		}
 	}
+	   public static KMLPlacemark create(double lon,double lat){
+	        try
+	        {
+	            ByteArrayInputStream kmlString = new ByteArrayInputStream(("<kml><Placemark><name>Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark></kml>").getBytes( ));
+	            KMLPlacemark placemark = ( KMLPlacemark ) KMLRoot.createAndParse(kmlString).getFeature( );
+	            return placemark;
+	        }
+	        catch ( Exception e )
+	        {
+	            e.printStackTrace( );
+	        }
+	        return null;
+	    }
+
 }

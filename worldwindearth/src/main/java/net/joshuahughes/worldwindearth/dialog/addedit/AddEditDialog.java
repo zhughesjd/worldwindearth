@@ -29,7 +29,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
 import net.joshuahughes.worldwindearth.WorldWindEarth;
-import net.joshuahughes.worldwindearth.support.KMLGeometryPlacemark;
+import net.joshuahughes.worldwindearth.panel.EditorTreeModel;
 import net.joshuahughes.worldwindearth.support.Support;
 
 public class AddEditDialog extends JDialog{
@@ -40,8 +40,9 @@ public class AddEditDialog extends JDialog{
 	JTabbedPane tabbedPane = new JTabbedPane();
 	JButton okButton = new JButton("OK");
 	JButton cancelButton = new JButton("Cancel");
-	public AddEditDialog(final WorldWindEarth earth,String prefix,final KMLAbstractFeature feature) {
+	public AddEditDialog(final WorldWindEarth earth,final KMLAbstractFeature feature) {
 		super(earth,false);
+		String prefix = feature.getRoot( ) == ((KMLFolder)earth.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).getModel( ).getRoot( ).getUserObject( )).getRoot( )?"Edit":"New";
 		setSize(500,500);
 		this.earth = earth;
 		JPanel panel = new JPanel();
@@ -75,7 +76,7 @@ public class AddEditDialog extends JDialog{
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				AddEditDialog.this.earth.setAddEnabled(true);
+				AddEditDialog.this.earth.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).setEnabled( true );
 			}
 		});
 		setTitle("World Wind Earth - "+prefix+" "+feature.getField(Support.KMLTag.name.name()));
@@ -83,7 +84,7 @@ public class AddEditDialog extends JDialog{
 		okButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				earth.add(feature);
+				earth.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).addToSelected(feature);
 				AddEditDialog.this.setVisible(false);
 				AddEditDialog.this.earth.setAddEnabled(true);
 			}
@@ -130,8 +131,8 @@ public class AddEditDialog extends JDialog{
     {
         if(feature instanceof KMLFolder || feature instanceof KMLNetworkLink)return new ExpandedOptionPanel( );
         if(feature instanceof KMLPhotoOverlay || feature instanceof KMLGroundOverlay)return new ImagePhotoPanel( );
-        if(feature instanceof KMLGeometryPlacemark){
-        	KMLGeometryPlacemark placemark = ( KMLGeometryPlacemark ) feature;
+        if(feature instanceof KMLPlacemark){
+            KMLPlacemark placemark = ( KMLPlacemark ) feature;
             if(placemark.getGeometry( ) instanceof KMLPoint || placemark.getGeometry( ) instanceof KMLModel) return new LatitdueLongitudePanel(placemark);
         }
         return new JPanel();

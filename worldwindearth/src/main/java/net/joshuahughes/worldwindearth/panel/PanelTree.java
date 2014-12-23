@@ -126,4 +126,7 @@ public class PanelTree extends CheckBoxTree{
 		EditorTreeModel model = (EditorTreeModel) getModel();
 		model.add(node,feature);
 	}
+	public EditorTreeModel getModel(){
+	    return ( EditorTreeModel ) super.getModel( );
+	}
 }

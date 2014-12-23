@@ -1,56 +1,80 @@
 package net.joshuahughes.worldwindearth.panel;
 
 import gov.nasa.worldwind.ogc.kml.KMLAbstractContainer;
-import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
+import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
+import gov.nasa.worldwind.ogc.kml.KMLFolder;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.xml.stream.XMLStreamException;
-
 
 public class EditorTreeModel extends DefaultTreeModel{
-	private static final long serialVersionUID = -3930283193252605728L;
-	public enum Type{MyPlaces,TemporaryPlaces,PrimaryDatabase,Search,Places(MyPlaces,TemporaryPlaces),Layers(PrimaryDatabase);Type[] subtypes;Type(Type... subtypes){this.subtypes=subtypes;}}
-	DefaultMutableTreeNode root;
-	public EditorTreeModel(Type type) {
-		super(new DefaultMutableTreeNode(type,true),true);
-		root = (DefaultMutableTreeNode) getRoot();
-		for(int index=0;index<type.subtypes.length;index++)
-			insertNodeInto(new DefaultMutableTreeNode(type.subtypes[index],true),root,index);
-	}
-	public KMLRoot add(File file){
-		if(root.getChildCount()<=0)return null;
-		DefaultMutableTreeNode child = (DefaultMutableTreeNode) root.getLastChild();
-		DefaultMutableTreeNode grandchild =new DefaultMutableTreeNode(file,true);
-		insertNodeInto(grandchild,child,child.getChildCount());
-		try {
-			KMLRoot value = KMLRoot.createAndParse(file);
-			add(grandchild,value);
-			return value;
-		} catch (IOException | XMLStreamException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	public void add(DefaultMutableTreeNode parent,KMLAbstractObject object){
-		if(object instanceof KMLRoot){
-			add(parent,((KMLRoot)object).getFeature());
-			return;
-		}
-		if(object instanceof KMLAbstractContainer){
-			KMLAbstractContainer kmlContainer = (KMLAbstractContainer)object;
-			DefaultMutableTreeNode container = new DefaultMutableTreeNode(kmlContainer,true);
-			insertNodeInto(container, parent,parent.getChildCount());
-			for(KMLAbstractObject kmlChild : kmlContainer.getFeatures())
-				add(container,kmlChild);
-			return;
-		}
-		insertNodeInto(new DefaultMutableTreeNode(object,false), parent, parent.getChildCount());
-	}
+    public enum Type{MyPlaces,TemporaryPlaces,PrimaryDatabase,Search,Places,Layers}
+    private static final long serialVersionUID = -1910087161141056231L;
+    private static DefaultMutableTreeNode rootNode;
+    private KMLRoot kmlRoot; 
+    public EditorTreeModel(Type type) {
+        super(rootNode = create(type));
+        this.kmlRoot = ((KMLFolder)rootNode.getUserObject()).getRoot();
+    }
+    public DefaultMutableTreeNode getRoot(){
+        return ( DefaultMutableTreeNode ) super.getRoot( );
+    }
+    private static DefaultMutableTreeNode create( Type type )
+    {   
+        String kmlString="<kml><Folder>";
+        kmlString+="<name>"+type.name( )+"</name>";
+        Type[] children = Type.Places.equals( type )?new Type[]{Type.MyPlaces,Type.TemporaryPlaces}:Type.Layers.equals( type )?new Type[]{Type.PrimaryDatabase}:new Type[]{};
+        for(Type childType : children)
+            kmlString+="<Folder><name>"+childType.name( )+"</name></Folder>";
+        kmlString+="</Folder></kml>";
+        try
+        {
+            KMLRoot root = KMLRoot.createAndParse(new ByteArrayInputStream(kmlString.getBytes( )));
+            return create(root.getFeature( ));
+        }
+        catch ( Exception e )
+        {
+            e.printStackTrace( );
+        }
+        
+        return null;
 
+    }
+    private static DefaultMutableTreeNode create( KMLAbstractFeature feature )
+    {
+        
+        DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode( feature );
+        if(feature instanceof KMLAbstractContainer)
+            for(KMLAbstractFeature child : (( KMLAbstractContainer ) feature).getFeatures( ))
+                featureNode.add( create(child) );
+        return featureNode ;
+    }
+    public void add(KMLAbstractFeature feature){
+        DefaultMutableTreeNode parent = ( DefaultMutableTreeNode ) getRoot();
+        if(parent.getChildCount( )>0) parent = ( DefaultMutableTreeNode ) parent.getLastChild( );
+        add(parent,feature);
+    }
+    public void add(DefaultMutableTreeNode parent,KMLAbstractFeature feature){
+        addKML(parent,feature);
+        addTree(parent,feature);
+        kmlRoot.requestRedraw();
+    }
+    private void addKML(DefaultMutableTreeNode parent,KMLAbstractFeature feature){
+        ((KMLAbstractContainer)parent.getUserObject()).addFeature(feature);
+    }
+    private void addTree(DefaultMutableTreeNode parent,KMLAbstractFeature feature){
+        if(!parent.getAllowsChildren( )) parent = ( DefaultMutableTreeNode ) parent.getParent( );
+        if(feature instanceof KMLAbstractContainer){
+            KMLAbstractContainer kmlContainer = (KMLAbstractContainer)feature;
+            DefaultMutableTreeNode container = new DefaultMutableTreeNode(kmlContainer,true);
+            insertNodeInto(container,parent,parent.getChildCount());
+            for(KMLAbstractFeature kmlChild : kmlContainer.getFeatures())
+                addTree(container,kmlChild);
+        }
+        else
+            insertNodeInto(new DefaultMutableTreeNode(feature,false), parent, parent.getChildCount());
+    }
 }
-
