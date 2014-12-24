@@ -24,14 +24,13 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
 
 import net.joshuahughes.worldwindearth.WorldWindEarth;
 import net.joshuahughes.worldwindearth.panel.EditorTreeModel;
 import net.joshuahughes.worldwindearth.panel.EditorTreeModel.Type;
 import net.joshuahughes.worldwindearth.support.Support;
+import de.micromata.opengis.kml.v_2_2_0.Feature;
+import de.micromata.opengis.kml.v_2_2_0.Kml;
 
 public enum Single implements Listener{
     Open___{
@@ -136,12 +135,13 @@ public enum Single implements Listener{
 //
 //                // Get the exported document as a string
 //                String xmlString = stringWriter.toString();
-            	String xmlString = Support.get(feature,0);
-                // Set up a transformer to pretty-print the XML
-                Transformer transformer = TransformerFactory.newInstance().newTransformer();
-                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-                System.out.println(xmlString);
+            	Kml kml = new Kml();
+            	kml.setFeature(( Feature ) Support.get(feature));
+            	kml.marshal( System.out );
+//                // Set up a transformer to pretty-print the XML
+//                Transformer transformer = TransformerFactory.newInstance().newTransformer();
+//                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+//                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 //                StringWriter stringWriter = new StringWriter();
 //                transformer.transform(new StreamSource(new StringReader(xmlString)), new StreamResult(stringWriter));
 //                System.out.println(stringWriter.toString());
