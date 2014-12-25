@@ -4,7 +4,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Position.PositionList;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractGeometry;
-import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
+import gov.nasa.worldwind.ogc.kml.KMLAbstractOverlay;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractTimePrimitive;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractView;
 import gov.nasa.worldwind.ogc.kml.KMLAlias;
@@ -13,7 +13,11 @@ import gov.nasa.worldwind.ogc.kml.KMLData;
 import gov.nasa.worldwind.ogc.kml.KMLDocument;
 import gov.nasa.worldwind.ogc.kml.KMLExtendedData;
 import gov.nasa.worldwind.ogc.kml.KMLFolder;
+import gov.nasa.worldwind.ogc.kml.KMLGroundOverlay;
+import gov.nasa.worldwind.ogc.kml.KMLIcon;
+import gov.nasa.worldwind.ogc.kml.KMLImagePyramid;
 import gov.nasa.worldwind.ogc.kml.KMLLatLonAltBox;
+import gov.nasa.worldwind.ogc.kml.KMLLatLonBox;
 import gov.nasa.worldwind.ogc.kml.KMLLineString;
 import gov.nasa.worldwind.ogc.kml.KMLLinearRing;
 import gov.nasa.worldwind.ogc.kml.KMLLink;
@@ -22,6 +26,7 @@ import gov.nasa.worldwind.ogc.kml.KMLLookAt;
 import gov.nasa.worldwind.ogc.kml.KMLModel;
 import gov.nasa.worldwind.ogc.kml.KMLMultiGeometry;
 import gov.nasa.worldwind.ogc.kml.KMLOrientation;
+import gov.nasa.worldwind.ogc.kml.KMLPhotoOverlay;
 import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
 import gov.nasa.worldwind.ogc.kml.KMLPoint;
 import gov.nasa.worldwind.ogc.kml.KMLPolygon;
@@ -29,10 +34,15 @@ import gov.nasa.worldwind.ogc.kml.KMLRegion;
 import gov.nasa.worldwind.ogc.kml.KMLResourceMap;
 import gov.nasa.worldwind.ogc.kml.KMLScale;
 import gov.nasa.worldwind.ogc.kml.KMLSchemaData;
+import gov.nasa.worldwind.ogc.kml.KMLScreenOverlay;
 import gov.nasa.worldwind.ogc.kml.KMLSimpleData;
 import gov.nasa.worldwind.ogc.kml.KMLTimeSpan;
 import gov.nasa.worldwind.ogc.kml.KMLTimeStamp;
+import gov.nasa.worldwind.ogc.kml.KMLVec2;
+import gov.nasa.worldwind.ogc.kml.gx.GXPlaylist;
+import gov.nasa.worldwind.ogc.kml.gx.GXTour;
 import gov.nasa.worldwind.util.xml.atom.AtomPerson;
+import gov.nasa.worldwind.util.xml.xal.XALAddressDetails;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -42,7 +52,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import de.micromata.opengis.kml.v_2_2_0.AbstractObject;
 import de.micromata.opengis.kml.v_2_2_0.AbstractView;
 import de.micromata.opengis.kml.v_2_2_0.Alias;
 import de.micromata.opengis.kml.v_2_2_0.AltitudeMode;
@@ -55,7 +64,12 @@ import de.micromata.opengis.kml.v_2_2_0.ExtendedData;
 import de.micromata.opengis.kml.v_2_2_0.Feature;
 import de.micromata.opengis.kml.v_2_2_0.Folder;
 import de.micromata.opengis.kml.v_2_2_0.Geometry;
+import de.micromata.opengis.kml.v_2_2_0.GridOrigin;
+import de.micromata.opengis.kml.v_2_2_0.GroundOverlay;
+import de.micromata.opengis.kml.v_2_2_0.Icon;
+import de.micromata.opengis.kml.v_2_2_0.ImagePyramid;
 import de.micromata.opengis.kml.v_2_2_0.LatLonAltBox;
+import de.micromata.opengis.kml.v_2_2_0.LatLonBox;
 import de.micromata.opengis.kml.v_2_2_0.LineString;
 import de.micromata.opengis.kml.v_2_2_0.LinearRing;
 import de.micromata.opengis.kml.v_2_2_0.Link;
@@ -64,6 +78,8 @@ import de.micromata.opengis.kml.v_2_2_0.LookAt;
 import de.micromata.opengis.kml.v_2_2_0.Model;
 import de.micromata.opengis.kml.v_2_2_0.MultiGeometry;
 import de.micromata.opengis.kml.v_2_2_0.Orientation;
+import de.micromata.opengis.kml.v_2_2_0.Overlay;
+import de.micromata.opengis.kml.v_2_2_0.PhotoOverlay;
 import de.micromata.opengis.kml.v_2_2_0.Placemark;
 import de.micromata.opengis.kml.v_2_2_0.Point;
 import de.micromata.opengis.kml.v_2_2_0.Polygon;
@@ -72,40 +88,132 @@ import de.micromata.opengis.kml.v_2_2_0.Region;
 import de.micromata.opengis.kml.v_2_2_0.ResourceMap;
 import de.micromata.opengis.kml.v_2_2_0.Scale;
 import de.micromata.opengis.kml.v_2_2_0.SchemaData;
+import de.micromata.opengis.kml.v_2_2_0.ScreenOverlay;
+import de.micromata.opengis.kml.v_2_2_0.Shape;
 import de.micromata.opengis.kml.v_2_2_0.SimpleData;
 import de.micromata.opengis.kml.v_2_2_0.TimePrimitive;
 import de.micromata.opengis.kml.v_2_2_0.TimeSpan;
 import de.micromata.opengis.kml.v_2_2_0.TimeStamp;
+import de.micromata.opengis.kml.v_2_2_0.Units;
+import de.micromata.opengis.kml.v_2_2_0.Vec2;
 import de.micromata.opengis.kml.v_2_2_0.atom.Author;
+import de.micromata.opengis.kml.v_2_2_0.gx.Playlist;
+import de.micromata.opengis.kml.v_2_2_0.gx.Tour;
+import de.micromata.opengis.kml.v_2_2_0.xal.AddressDetails;
 
 public class Support {
 	public static List<String> validNames = Arrays.asList("getGeometry");
 	public static enum KMLTag{name,description, coordinates, id}
-	public static AbstractObject get(KMLAbstractObject kmlObject) {
-		if(kmlObject instanceof KMLPlacemark) return convert((KMLPlacemark)kmlObject);
-		if(kmlObject instanceof KMLFolder) return convert((KMLFolder)kmlObject);
-		if(kmlObject instanceof KMLDocument) return convert((KMLDocument)kmlObject);
-		return null;
-	}
 	public static Document convert(KMLDocument get) {
 		if(get == null) return null;
 		Document set = new Document();
-		setPrimitives(set, get);
 		synchronize(set, get);
 		for(KMLAbstractFeature kmlFeature : get.getFeatures())
-			set.getFeature().add(convert(kmlFeature));
+				set.getFeature().add(convert(kmlFeature));
 		return set;
 	}
 	private static Folder convert(KMLFolder get) {
 		if(get == null) return null;
 		Folder set = new Folder();
-		setPrimitives(set, get);
 		synchronize(set, get);
 		for(KMLAbstractFeature kmlFeature : get.getFeatures())
 			set.getFeature().add(convert(kmlFeature));
 		return set;
 	}
-	private static Feature convert(KMLAbstractFeature set){
+	public static ScreenOverlay convert(KMLScreenOverlay get){
+		if(get == null) return null;
+		ScreenOverlay set = new ScreenOverlay();
+		synchronize(set, get);
+		set.setOverlayXY(convert(get.getOverlayXY()));
+		set.setRotationXY(convert(get.getRotationXY()));
+		set.setScreenXY(convert(get.getScreenXY()));
+		set.setSize(convert(get.getSize()));
+		return set;
+	}
+	public static Vec2 convert(KMLVec2 get) {
+		if(get == null) return null;
+		Vec2 set = new Vec2();
+		synchronize(set, get);
+		set.setXunits(convert(Units.class,get.getXunits()));
+		set.setYunits(convert(Units.class,get.getYunits()));
+		return set;
+	}
+	public static GroundOverlay convert(KMLGroundOverlay get){
+		if(get == null) return null;
+		GroundOverlay set = new GroundOverlay();
+		synchronize(set, get);
+		set.setAltitudeMode(convert(AltitudeMode.class,get.getAltitudeMode()));
+		set.setLatLonBox(convert(get.getLatLonBox()));
+		return set;
+	}
+	public static PhotoOverlay convert(KMLPhotoOverlay get){
+		if(get == null) return null;
+		PhotoOverlay set = new PhotoOverlay();
+		synchronize(set, get);
+		set.setImagePyramid(convert(get.getImagePyramid()));
+		set.setPoint(convert(get.getPoint()));
+		set.setShape(convert(Shape.class,get.getShape()));
+		return set;
+	}
+	@SuppressWarnings("unchecked")
+	public static <E extends Enum<E>> E convert(Class<E> enumT,String get){
+		if(get == null) return null;
+		try {
+			Method method = enumT.getMethod("fromValue", String.class);
+			return (E) method.invoke(null,get);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	private static ImagePyramid convert(KMLImagePyramid get) {
+		if(get == null) return null;
+		ImagePyramid set = new ImagePyramid();
+		synchronize(set, get);
+		set.setGridOrigin(convert(GridOrigin.class,get.getGridOrigin()));
+		return set;
+	}
+	private static Icon convert(KMLIcon get) {
+		if(get == null) return null;
+		Icon set = new Icon();
+		synchronize(set, get);
+		set.setRefreshMode(convert(RefreshMode.class,get.getRefreshMode()));
+		return set;
+	}
+	private static LatLonBox convert(KMLLatLonBox get) {
+		if(get == null) return null;
+		LatLonBox set = new LatLonBox();
+		synchronize(set, get);
+		return set;
+	}
+	private static Tour convert(GXTour get){
+		if(get == null) return null;
+		Tour set = new Tour();
+		synchronize(set, get);
+		set.setPlaylist(convert(get.getPlaylist()));
+		return set;
+	}
+	private static Playlist convert(GXPlaylist get) {
+		if(get == null) return null;
+		Playlist set = new Playlist();
+		synchronize(set, get);
+		return set;
+	}
+	public static Feature convert(KMLAbstractFeature get){
+		if(get instanceof KMLPlacemark)
+			return convert((KMLPlacemark)get);
+		if(get instanceof KMLFolder)
+			return convert((KMLFolder)get);
+		if(get instanceof KMLDocument)
+			return convert((KMLDocument)get);
+		if(get instanceof KMLGroundOverlay)
+			return convert((KMLGroundOverlay)get);
+		if(get instanceof KMLPhotoOverlay)
+			return convert((KMLPhotoOverlay)get);
+		if(get instanceof KMLScreenOverlay)
+			return convert((KMLScreenOverlay)get);
+		if(get instanceof GXTour)
+			return convert((GXTour)get);
 		return null;
 	}
 	public static final LinkedHashMap<Class<?>,Class<?>> primitiveMap = new LinkedHashMap<>( );
@@ -119,17 +227,23 @@ public class Support {
 		primitiveMap.put( long.class, Long.class ); 
 		primitiveMap.put( short.class, Short.class ); 
 		primitiveMap.put( double.class, Double.class ); 
+		primitiveMap.put( String.class, String.class ); 
 	}
-	public static void setPrimitives(Object set,Object get){
+	public static void synchronize(Object set,Object get){
 		for(Method sm : set.getClass( ).getMethods( )){
 			if(!sm.getName().startsWith("set")) continue;
 			String setName = sm.getName().substring(3).toLowerCase();
 			for(Method gm : get.getClass( ).getMethods( )){
 				if(!gm.getName().startsWith("get")) continue;
 				String getName = gm.getName().substring(3).toLowerCase();
-				if(!setName.contains(getName) && !getName.contains(setName))continue;
+				if(!setName.equals(getName))continue;
 				for(Entry<Class<?>, Class<?>> e : primitiveMap.entrySet( )){
-					if((sm.getParameterTypes( )[0].equals( e.getKey( ) ) && gm.getReturnType().equals( e.getValue( ) )) || (gm.getReturnType( ).equals( e.getKey( ) ) && sm.getParameterTypes( )[0].equals( e.getValue( ) )) ){
+					if(
+							(sm.getParameterTypes( )[0].equals( e.getKey( ) ) && gm.getReturnType().equals( e.getKey( ) )) || 
+							(sm.getParameterTypes( )[0].equals( e.getValue( ) ) && gm.getReturnType().equals( e.getValue( ) )) || 
+							(sm.getParameterTypes( )[0].equals( e.getKey( ) ) && gm.getReturnType().equals( e.getValue( ) )) || 
+							(gm.getReturnType( ).equals( e.getKey( ) ) && sm.getParameterTypes( )[0].equals( e.getValue( ) )) )
+					{
 						try {
 							sm.invoke( set, gm.invoke( get ) );
 						} catch (Exception e1) {
@@ -140,18 +254,29 @@ public class Support {
 				}
 			}
 		}
+		if(set instanceof Feature && get instanceof KMLAbstractFeature){
+			Feature sf = (Feature) set;
+			KMLAbstractFeature gf = (KMLAbstractFeature) get;
+			sf.setAbstractView(convert(gf.getView()));
+			sf.setAtomAuthor(convert(gf.getAuthor()));
+			sf.setExtendedData(convert(gf.getExtendedData()));
+			if(gf.getStyleUrl()!=null)sf.setStyleUrl(gf.getStyleUrl().getCharacters());
+			sf.setXalAddressDetails(convert(gf.getAddressDetails()));
+		}
+		if(set instanceof Overlay && get instanceof KMLAbstractOverlay){
+			Overlay so = (Overlay) set;
+			KMLAbstractOverlay go = (KMLAbstractOverlay) get;
+			so.setIcon(convert(go.getIcon()));
+		}
+	}
+	private static AddressDetails convert(XALAddressDetails get) {
+		if(get == null) return null;
+		return null;
+	}
 
-	}
-	public static void synchronize(Feature set,KMLAbstractFeature get){
-		set.setAbstractView(convert(get.getView()));
-		set.setAtomAuthor(convert(get.getAuthor()));
-		set.setExtendedData(convert(get.getExtendedData()));
-		set.setStyleUrl(get.getStyleUrl().getCharacters());
-	}
 	public static Placemark convert(KMLPlacemark get){
 		if(get == null) return null;
 		Placemark set = new Placemark();
-		setPrimitives(set, get);
 		synchronize(set, get);
 		set.setGeometry(convert(get.getGeometry()));
 		set.setRegion(convert(get.getRegion()));
@@ -168,28 +293,27 @@ public class Support {
 	public static TimeStamp convert(KMLTimeStamp get) {
 		if(get == null) return null;
 		TimeStamp set = new TimeStamp();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		return set;
 	}
 	public static TimeSpan convert(KMLTimeSpan get) {
 		if(get == null) return null;
 		TimeSpan set = new TimeSpan();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		return set;
 	}
 	private static Region convert(KMLRegion get) {
 		if(get == null) return null;
 		Region set = new Region();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		set.setLatLonAltBox(convert(get.getLatLonAltBox()));
 		return set;
 	}
 	private static LatLonAltBox convert(KMLLatLonAltBox get) {
 		if(get == null) return null;
 		LatLonAltBox set = new LatLonAltBox();
-		setPrimitives(set, get);
-		if(get.getAltitudeMode()!=null)
-			set.setAltitudeMode(AltitudeMode.fromValue(get.getAltitudeMode().trim()));
+		synchronize(set, get);
+		set.setAltitudeMode(convert(AltitudeMode.class,get.getAltitudeMode()));
 		return set;
 	}
 	public static Geometry convert(KMLAbstractGeometry get){
@@ -207,7 +331,7 @@ public class Support {
 	public static ExtendedData convert(KMLExtendedData get){
 		if(get == null) return null;
 		ExtendedData set = new ExtendedData();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		for(KMLData kmlData : get.getData())
 			set.getData().add(convert(kmlData));
 		for(KMLSchemaData kmlSchema : get.getSchemaData())
@@ -217,13 +341,13 @@ public class Support {
 	public static SimpleData convert(KMLSimpleData get){
 		if(get == null) return null;
 		SimpleData set = new SimpleData(get.getCharacters());
-		setPrimitives(set, get);
+		synchronize(set, get);
 		return set;
 	}
 	public static SchemaData convert(KMLSchemaData get){
 		if(get == null) return null;
 		SchemaData set = new SchemaData();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		for(KMLSimpleData kmlData : get.getSimpleData())
 			set.getSimpleData().add(convert(kmlData));
 		return set;
@@ -231,20 +355,20 @@ public class Support {
 	public static Data convert(KMLData get){
 		if(get == null) return null;
 		Data set = new Data(get.getValue());
-		setPrimitives(set, get);
+		synchronize(set, get);
 		return set;
 	}
 	public static Link convert(KMLLink get){
 		if(get == null) return null;
 		Link set = new Link();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		set.setRefreshMode(RefreshMode.valueOf(get.getRefreshMode().trim()));
 		return set;
 	}
 	public static Author convert(AtomPerson get){
 		if(get == null) return null;
 		Author set = new Author();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		if(get.getName()!=null)set.addToNameOrUriOrEmail(get.getName());
 		if(get.getUri()!=null)set.addToNameOrUriOrEmail(get.getUri());
 		if(get.getEmail()!=null)set.addToNameOrUriOrEmail(get.getEmail());
@@ -259,25 +383,23 @@ public class Support {
 	public static LookAt convert(KMLLookAt get){
 		if(get == null) return null;
 		LookAt set = new LookAt();
-		setPrimitives(set, get);
-		if(get.getAltitudeMode()!=null)
-			set.setAltitudeMode(AltitudeMode.fromValue(get.getAltitudeMode().trim()));
+		synchronize(set, get);
+		set.setAltitudeMode(null);
+		set.setAltitudeMode(convert(AltitudeMode.class,get.getAltitudeMode()));
 		return set;
 	}
 	public static Camera convert(KMLCamera get){
 		if(get == null) return null;
 		Camera set = new Camera();
-		setPrimitives(set, get);
-		if(get.getAltitudeMode()!=null)
-			set.setAltitudeMode(AltitudeMode.fromValue(get.getAltitudeMode().trim()));
+		synchronize(set, get);
+		set.setAltitudeMode(convert(AltitudeMode.class,get.getAltitudeMode()));
 		return set;
 	}
 	public static Polygon convert(KMLPolygon get){
 		if(get == null) return null;
 		Polygon set = new Polygon();
-		setPrimitives(set, get);
-		if(get.getAltitudeMode()!=null)
-			set.setAltitudeMode(AltitudeMode.fromValue(get.getAltitudeMode().trim()));
+		synchronize(set, get);
+		set.setAltitudeMode(convert(AltitudeMode.class,get.getAltitudeMode()));
 		if(get.getInnerBoundaries()!=null)
 			for(KMLLinearRing kmlBoundary : get.getInnerBoundaries()){
 				Boundary boundary = new Boundary();
@@ -292,7 +414,7 @@ public class Support {
 	public static MultiGeometry convert(KMLMultiGeometry get){
 		if(get == null) return null;
 		MultiGeometry set = new MultiGeometry();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		for(KMLAbstractGeometry kmlGeom :get.getGeometries())
 			set.getGeometry().add(convert(kmlGeom));
 		return set;
@@ -301,9 +423,8 @@ public class Support {
 	public static Model convert(KMLModel get){
 		if(get == null) return null;
 		Model set = new Model();
-		setPrimitives(set, get);
-		if(get.getAltitudeMode()!=null)
-			set.setAltitudeMode(AltitudeMode.fromValue(get.getAltitudeMode().trim()));
+		synchronize(set, get);
+		set.setAltitudeMode(convert(AltitudeMode.class,get.getAltitudeMode()));
 		set.setLink(convert(get.getLink()));
 		set.setLocation(convert(get.getLocation()));
 		set.setOrientation(convert(get.getOrientation()));
@@ -314,13 +435,13 @@ public class Support {
 	private static Scale convert(KMLScale get) {
 		if(get == null) return null;
 		Scale set = new Scale();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		return set;
 	}
 	private static ResourceMap convert(KMLResourceMap get) {
 		if(get == null) return null;
 		ResourceMap set = new ResourceMap();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		for(KMLAlias kmlAlias : get.getAliases())
 			set.getAlias().add(convert(kmlAlias));
 		return set;
@@ -328,43 +449,41 @@ public class Support {
 	private static Alias convert(KMLAlias get) {
 		if(get == null) return null;
 		Alias set = new Alias();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		return set;
 	}
 	private static Orientation convert(KMLOrientation get) {
 		if(get == null) return null;
 		Orientation set = new Orientation();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		return set;
 	}
 	private static Location convert(KMLLocation get) {
 		if(get == null) return null;
 		Location set = new Location();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		return set;
 	}
 	public static LineString convert(KMLLineString get){
 		if(get == null) return null;
 		LineString set = new LineString();
-		setPrimitives(set, get);
-		if(get.getAltitudeMode()!=null)
-			set.setAltitudeMode(AltitudeMode.fromValue(get.getAltitudeMode().trim()));
+		synchronize(set, get);
+		set.setAltitudeMode(convert(AltitudeMode.class,get.getAltitudeMode()));
 		set.setCoordinates(convert(get.getCoordinates()));
 		return set;
 	}
 	public static LinearRing convert(KMLLinearRing get){
 		if(get == null) return null;
 		LinearRing set = new LinearRing();
-		setPrimitives(set, get);
-		if(get.getAltitudeMode()!=null)
-			set.setAltitudeMode(AltitudeMode.fromValue(get.getAltitudeMode().trim()));
+		synchronize(set, get);
+		set.setAltitudeMode(convert(AltitudeMode.class,get.getAltitudeMode()));
 		set.setCoordinates(convert(get.getCoordinates()));
 		return set;
 	}
 	public static Point convert(KMLPoint get){
 		if(get == null) return null;
 		Point set = new Point();
-		setPrimitives(set, get);
+		synchronize(set, get);
 		set.setCoordinates(Collections.singletonList(convert(get.getCoordinates())));
 		return set;
 	}
