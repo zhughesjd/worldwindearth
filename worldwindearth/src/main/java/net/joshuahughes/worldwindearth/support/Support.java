@@ -41,6 +41,7 @@ import gov.nasa.worldwind.ogc.kml.KMLPolyStyle;
 import gov.nasa.worldwind.ogc.kml.KMLPolygon;
 import gov.nasa.worldwind.ogc.kml.KMLRegion;
 import gov.nasa.worldwind.ogc.kml.KMLResourceMap;
+import gov.nasa.worldwind.ogc.kml.KMLRoot;
 import gov.nasa.worldwind.ogc.kml.KMLScale;
 import gov.nasa.worldwind.ogc.kml.KMLSchemaData;
 import gov.nasa.worldwind.ogc.kml.KMLScreenOverlay;
@@ -83,6 +84,7 @@ import de.micromata.opengis.kml.v_2_2_0.Icon;
 import de.micromata.opengis.kml.v_2_2_0.IconStyle;
 import de.micromata.opengis.kml.v_2_2_0.ImagePyramid;
 import de.micromata.opengis.kml.v_2_2_0.ItemIcon;
+import de.micromata.opengis.kml.v_2_2_0.Kml;
 import de.micromata.opengis.kml.v_2_2_0.LabelStyle;
 import de.micromata.opengis.kml.v_2_2_0.LatLonAltBox;
 import de.micromata.opengis.kml.v_2_2_0.LatLonBox;
@@ -221,6 +223,13 @@ public class Support {
         if(get == null) return null;
         Playlist set = new Playlist();
         synchronize(set, get);
+        return set;
+    }
+    public static Kml convert(KMLRoot get){
+        if(get == null) return null;
+        Kml set = new Kml();
+        synchronize(set, get);
+        set.setFeature(convert(get.getFeature()));
         return set;
     }
     public static Feature convert(KMLAbstractFeature get){

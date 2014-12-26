@@ -9,6 +9,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.ByteArrayInputStream;
 import java.util.Map.Entry;
 
@@ -52,6 +54,12 @@ public class WorldWindEarth extends JFrame{
         setJMenuBar(menubar);
         for(Overlay overlay : Overlay.values())
             viewer.setVisible(overlay,menubar.get(overlay).isSelected());
+        addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				panel.getTreeMap().get(EditorTreeModel.Type.Places).getModel().save();
+			}
+		});
         menubar.doClicks();
     }
     public Viewer getViewer() {
