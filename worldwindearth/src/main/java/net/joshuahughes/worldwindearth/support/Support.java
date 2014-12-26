@@ -57,7 +57,6 @@ import gov.nasa.worldwind.util.xml.xal.XALAddressDetails;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -128,7 +127,6 @@ import de.micromata.opengis.kml.v_2_2_0.gx.Tour;
 import de.micromata.opengis.kml.v_2_2_0.xal.AddressDetails;
 
 public class Support {
-    public static List<String> validNames = Arrays.asList("getGeometry");
     public static enum KMLTag{name,description, coordinates, id}
     public static Document convert(KMLDocument get) {
         if(get == null) return null;

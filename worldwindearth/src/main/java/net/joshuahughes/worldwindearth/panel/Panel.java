@@ -26,6 +26,7 @@ public class Panel extends JPanel{
         super(new GridBagLayout());
         for(EditorTreeModel.Type type : types){
             PanelTree  panelTree = new PanelTree(new EditorTreeModel(type));
+            panelTree.setEditable( EditorTreeModel.Type.Places.equals( type ) );
             treeMap.put(type, panelTree);
             JScrollPane pane = new JScrollPane(panelTree);
             panelList.add(new ButtonPanel(type.name(),pane));
@@ -93,15 +94,4 @@ public class Panel extends JPanel{
     {
         return treeMap;
     }
-    
-//    public void setAddEnabled(boolean enabled) {
-//        treeMap.get(EditorTreeModel.Type.Places).setEnabled(enabled);
-//    }
-//    public void add(EditorTreeModel.Type type,KMLAbstractFeature feature) {
-//        treeMap.get(type).addToSelected(feature);
-//    }
-//    public LinkedHashMap<EditorTreeModel.Type, EditorTreeModel> getEditorMap( )
-//    {
-//        return editorMap;
-//    }
 }

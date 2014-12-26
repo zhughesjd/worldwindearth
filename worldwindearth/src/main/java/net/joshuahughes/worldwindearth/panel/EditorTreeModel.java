@@ -27,8 +27,10 @@ public class EditorTreeModel extends DefaultTreeModel{
         String kmlString="<kml><Folder>";
         kmlString+="<name>"+type.name( )+"</name>";
         Type[] children = Type.Places.equals( type )?new Type[]{Type.MyPlaces,Type.TemporaryPlaces}:Type.Layers.equals( type )?new Type[]{Type.PrimaryDatabase}:new Type[]{};
-        for(Type childType : children)
-            kmlString+="<Folder><name>"+childType.name( )+"</name></Folder>";
+        for(Type childType : children){
+            String container = childType.equals( Type.MyPlaces )?"Document":"Folder";
+            kmlString+="<"+container+"><name>"+childType.name( )+"</name></"+container+">";
+        }
         kmlString+="</Folder></kml>";
         try
         {
