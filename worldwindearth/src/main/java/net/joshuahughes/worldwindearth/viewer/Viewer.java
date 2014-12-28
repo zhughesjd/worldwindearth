@@ -35,6 +35,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
@@ -91,7 +93,10 @@ public class Viewer extends JPanel{
 	protected void adjust() {
 		Position position = dragger.getPosition();
 		if(feature!=null && feature instanceof KMLPlacemark && ((KMLPlacemark)feature).getGeometry() instanceof KMLPoint){
-			((KMLPlacemark)feature).applyChange(Support.create(position.getLatitude().getDegrees(),position.getLongitude().getDegrees()));
+			KMLPlacemark placemark = (KMLPlacemark) feature;
+			Position oldPosition = ((KMLPoint)placemark.getGeometry()).getCoordinates();
+			placemark.applyChange(Support.create(position.getLatitude().getDegrees(),position.getLongitude().getDegrees()));
+			feature.getRoot().firePropertyChange(Position.class.getName(), oldPosition, ((KMLPoint)placemark.getGeometry()).getCoordinates());
 		}
 	}
 	public void setVisible(final Overlay overlay, boolean show) {
@@ -117,6 +122,20 @@ public class Viewer extends JPanel{
     	editLayer.removeAllIcons();
     }
     public void edit(KMLRoot root) {
+    	root.addPropertyChangeListener( new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent event) {
+				Object object = event.getNewValue();
+				if(object != null && object instanceof Position){
+					Position position = (Position) object;
+					if(feature!=null && feature instanceof KMLPlacemark && ((KMLPlacemark)feature).getGeometry() instanceof KMLPoint){
+						KMLPlacemark placemark = (KMLPlacemark) feature;
+						placemark.applyChange(Support.create(position.getLatitude().getDegrees(),position.getLongitude().getDegrees()));
+						editLayer.getIcons().iterator().next().setPosition(position);
+					}
+				}
+			}
+		});
     	stopEditing();
     	KMLAbstractFeature candidateFeature = root.getFeature();
     	if(candidateFeature !=null && candidateFeature instanceof KMLPlacemark && ((KMLPlacemark)candidateFeature).getGeometry() instanceof KMLPoint){

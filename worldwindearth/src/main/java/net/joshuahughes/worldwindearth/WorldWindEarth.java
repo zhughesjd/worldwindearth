@@ -8,7 +8,6 @@ import gov.nasa.worldwind.ogc.kml.impl.KMLTraversalContext;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayInputStream;
@@ -102,9 +101,9 @@ public class WorldWindEarth extends JFrame{
         System.exit(1);
     }
     public static WorldWindEarth findWindow(Component c) {
-        if (c instanceof Window) {
+        if (c instanceof WorldWindEarth) {
             return (WorldWindEarth) c;
-        } else if (c instanceof JPopupMenu) {
+        }else if (c instanceof JPopupMenu) {
             JPopupMenu pop = (JPopupMenu) c;
             return findWindow(pop.getInvoker());
         } else {

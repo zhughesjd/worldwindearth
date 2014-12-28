@@ -41,6 +41,7 @@ public class AddEditDialog extends JDialog{
 	JButton okButton = new JButton("OK");
 	JButton cancelButton = new JButton("Cancel");
 	public AddEditDialog(final WorldWindEarth earth,final KMLAbstractFeature feature) {
+		super(earth,false);
 		String prefix = feature.getRoot( ) == ((KMLFolder)earth.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).getModel( ).getRoot( ).getUserObject( )).getRoot( )?"Edit":"New";
 		setSize(500,500);
 		this.earth = earth;

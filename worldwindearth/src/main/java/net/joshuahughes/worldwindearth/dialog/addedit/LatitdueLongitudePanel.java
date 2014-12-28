@@ -1,5 +1,6 @@
 package net.joshuahughes.worldwindearth.dialog.addedit;
 
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
 import gov.nasa.worldwind.ogc.kml.KMLPoint;
 
@@ -7,6 +8,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -21,9 +24,20 @@ public class LatitdueLongitudePanel extends AbstractPanel
 	public LatitdueLongitudePanel(final KMLPlacemark placemark){
 		super(new GridBagLayout( ));
 		if(placemark.getGeometry() instanceof KMLPoint){
-			KMLPoint point = (KMLPoint) placemark.getGeometry();
+			final KMLPoint point = (KMLPoint) placemark.getGeometry();
 			latField.setText(point.getCoordinates().getLatitude().getDegrees()+"");
 			lonField.setText(point.getCoordinates().getLongitude().getDegrees()+"");
+			point.getRoot().addPropertyChangeListener( new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent event) {
+					Object object = event.getNewValue();
+					if(object != null && object instanceof Position){
+						Position position = (Position) object;
+						latField.setText(position.getLatitude().getDegrees()+"");
+						lonField.setText(position.getLongitude().getDegrees()+"");
+					}
+				}
+			});
 		}
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx=gbc.gridy=0;
@@ -36,7 +50,10 @@ public class LatitdueLongitudePanel extends AbstractPanel
 					try{
 						double latitude = Double.parseDouble(latField.getText().trim());
 						double longitude = Double.parseDouble(lonField.getText().trim());
+						Position oldPosition = ((KMLPoint)placemark.getGeometry()).getCoordinates();
 						placemark.applyChange( Support.create(latitude,longitude) );
+						placemark.getRoot().firePropertyChange(Position.class.getName(), oldPosition, ((KMLPoint)placemark.getGeometry()).getCoordinates());
+						
 					}catch(NumberFormatException exception){
 						latField.setText(lat+"");
 						lonField.setText(lon+"");
@@ -44,6 +61,7 @@ public class LatitdueLongitudePanel extends AbstractPanel
 				}
 				@Override
 				public void focusGained(FocusEvent e) {
+					
 					lat = Double.parseDouble(latField.getText().trim());
 					lon = Double.parseDouble(lonField.getText().trim());
 				}
