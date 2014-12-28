@@ -115,6 +115,7 @@ public class WorldWindEarth extends JFrame{
     public void add(Add add) {
         KMLAbstractFeature feature = create(add);
         feature.setField( Support.KMLTag.name.name(), add.name( ).replace('_', ' ') );
+        viewer.edit(feature.getRoot());
         new AddEditDialog(this,feature);
     }
     private static long id = 0;

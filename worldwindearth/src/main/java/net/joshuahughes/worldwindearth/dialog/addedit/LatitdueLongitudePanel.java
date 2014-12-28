@@ -2,16 +2,16 @@ package net.joshuahughes.worldwindearth.dialog.addedit;
 
 import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
 import gov.nasa.worldwind.ogc.kml.KMLPoint;
-import gov.nasa.worldwind.ogc.kml.KMLRoot;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.io.ByteArrayInputStream;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+
+import net.joshuahughes.worldwindearth.support.Support;
 
 public class LatitdueLongitudePanel extends AbstractPanel
 {
@@ -36,7 +36,7 @@ public class LatitdueLongitudePanel extends AbstractPanel
 					try{
 						double latitude = Double.parseDouble(latField.getText().trim());
 						double longitude = Double.parseDouble(lonField.getText().trim());
-						placemark.applyChange( create(longitude,latitude) );
+						placemark.applyChange( Support.create(latitude,longitude) );
 					}catch(NumberFormatException exception){
 						latField.setText(lat+"");
 						lonField.setText(lon+"");
@@ -61,18 +61,4 @@ public class LatitdueLongitudePanel extends AbstractPanel
 			gbc.gridy++;
 		}
 	}
-	   public static KMLPlacemark create(double lon,double lat){
-	        try
-	        {
-	            ByteArrayInputStream kmlString = new ByteArrayInputStream(("<kml><Placemark><name>Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark></kml>").getBytes( ));
-	            KMLPlacemark placemark = ( KMLPlacemark ) KMLRoot.createAndParse(kmlString).getFeature( );
-	            return placemark;
-	        }
-	        catch ( Exception e )
-	        {
-	            e.printStackTrace( );
-	        }
-	        return null;
-	    }
-
 }

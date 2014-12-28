@@ -15,10 +15,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -41,7 +41,6 @@ public class AddEditDialog extends JDialog{
 	JButton okButton = new JButton("OK");
 	JButton cancelButton = new JButton("Cancel");
 	public AddEditDialog(final WorldWindEarth earth,final KMLAbstractFeature feature) {
-		super(earth,false);
 		String prefix = feature.getRoot( ) == ((KMLFolder)earth.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).getModel( ).getRoot( ).getUserObject( )).getRoot( )?"Edit":"New";
 		setSize(500,500);
 		this.earth = earth;
@@ -72,10 +71,10 @@ public class AddEditDialog extends JDialog{
         gbc.gridy++;
 		panel.add(create(), gbc);
 		setContentPane(panel);
-		setSize(500,1000);
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
+		setSize(500,500);
+		addComponentListener( new ComponentAdapter() {
+			public void componentHidden(ComponentEvent event){
+				earth.getViewer().stopEditing();
 				AddEditDialog.this.earth.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).setEnabled( true );
 			}
 		});
@@ -105,7 +104,6 @@ public class AddEditDialog extends JDialog{
 			
 		});
 		setVisible(true);
-
 	}
 	
     private JPanel create() {

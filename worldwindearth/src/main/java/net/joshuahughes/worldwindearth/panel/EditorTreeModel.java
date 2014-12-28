@@ -9,6 +9,7 @@ import gov.nasa.worldwind.ogc.kml.KMLRoot;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -53,9 +54,25 @@ public class EditorTreeModel extends DefaultTreeModel{
 						Feature containerToSave = Support.convert(container);
 						Kml kml = new Kml();
 						kml.setFeature(containerToSave);
-						kml.marshal(file);
+						FileOutputStream fos = new FileOutputStream(file);
+						kml.marshal(fos);
+						fos.close();
 					}
-					container = (KMLAbstractContainer) KMLRoot.createAndParse(file).getFeature();
+					try{
+						container = (KMLAbstractContainer) KMLRoot.createAndParse(file).getFeature();
+					}catch(Exception e){
+						file.delete();
+						file = getFile();
+						container = new KMLDocument(rootFolder.getNamespaceURI());
+						container.setField(Support.KMLTag.name.name(),childType.name());
+						Feature containerToSave = Support.convert(container);
+						Kml kml = new Kml();
+						kml.setFeature(containerToSave);
+						FileOutputStream fos = new FileOutputStream(file);
+						kml.marshal(fos);
+						fos.close();
+						container = (KMLAbstractContainer) KMLRoot.createAndParse(file).getFeature();
+					}
 				}
 				container.setField(Support.KMLTag.name.name(),childType.name());
 				rootFolder.addFeature(container);
