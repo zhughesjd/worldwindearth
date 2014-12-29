@@ -622,7 +622,7 @@ public class Support {
 		if(positList == null) return null;
 		ArrayList<Coordinate> list = new ArrayList<Coordinate>();
 		for(Position posit : positList.list)
-			list.add(new Coordinate(posit.getLongitude().getDegrees(), posit.getLongitude().getDegrees(), posit.getAltitude()));
+			list.add(new Coordinate(posit.getLongitude().getDegrees(), posit.getLatitude().getDegrees(), posit.getAltitude()));
 		return list;
 	}
 	public static Coordinate convert(Position position){

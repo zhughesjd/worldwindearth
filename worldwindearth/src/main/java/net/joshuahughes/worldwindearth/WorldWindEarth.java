@@ -128,7 +128,7 @@ public class WorldWindEarth extends JFrame{
             if(Add.Placemark.equals( add ))
                 kmlString+="<Placemark><Point><coordinates>"+viewer.getPosition( ).getLongitude( ).getDegrees( )+","+viewer.getPosition( ).getLatitude( ).getDegrees( )+",0</coordinates></Point></Placemark>";
             if(Add.Path.equals( add ))
-                kmlString+="<Placemark><LineString><coordinates></coordinates></LineString></Placemark>";
+                kmlString+="<Placemark><LineString><tessellate>1</tessellate><coordinates></coordinates></LineString></Placemark>";
             if(Add.Polygon.equals( add ))
                 kmlString+="<Placemark><outerBoundaryIs><LinearRing><coordinates></coordinates></LinearRing></outerBoundaryIs></Placemark>";
             if(Add.Model.equals( add ))
