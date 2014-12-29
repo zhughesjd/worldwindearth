@@ -1,6 +1,7 @@
 package net.joshuahughes.worldwindearth.dialog.addedit;
 
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.ogc.kml.KMLModel;
 import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
 import gov.nasa.worldwind.ogc.kml.KMLPoint;
 
@@ -11,7 +12,6 @@ import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -23,27 +23,17 @@ public class LatitdueLongitudePanel extends AbstractPanel
 	private static final long serialVersionUID = -1260396815326982917L;
 	JTextField latField = new JTextField(){private static final long serialVersionUID = 1L;{setName("Latitude");}};
 	JTextField lonField = new JTextField(){private static final long serialVersionUID = 1L;{setName("Longitude");}};
+	private KMLPlacemark placemark;
 	public LatitdueLongitudePanel(final KMLPlacemark placemark){
 		super(new GridBagLayout( ));
-		if(placemark.getGeometry() instanceof KMLPoint){
-			final KMLPoint point = (KMLPoint) placemark.getGeometry();
-			latField.setText(point.getCoordinates().getLatitude().getDegrees()+"");
-			lonField.setText(point.getCoordinates().getLongitude().getDegrees()+"");
-			point.getRoot().addPropertyChangeListener( new PropertyChangeListener() {
+		this.placemark = placemark;
+		adjust();
+		placemark.getRoot().addPropertyChangeListener( new PropertyChangeListener() {
 				@Override
 				public void propertyChange(PropertyChangeEvent event) {
-					Object object = event.getNewValue();
-					if(object != null && object instanceof List){
-						List<?> list = (List<?>) object;
-						if(list.size()>0 && list.get(0) instanceof Position){
-							Position position = (Position) list.get(0);
-							latField.setText(position.getLatitude().getDegrees()+"");
-							lonField.setText(position.getLongitude().getDegrees()+"");
-						}
-					}
+					adjust();
 				}
-			});
-		}
+		});
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx=gbc.gridy=0;
 		gbc.weighty=1;
@@ -82,6 +72,18 @@ public class LatitdueLongitudePanel extends AbstractPanel
 			gbc.gridx++;
 			add(field,gbc);
 			gbc.gridy++;
+		}
+	}
+	public void adjust(){
+		if(placemark.getGeometry() instanceof KMLPoint){
+			KMLPoint point = (KMLPoint) placemark.getGeometry();
+			latField.setText(point.getCoordinates().getLatitude().getDegrees()+"");
+			lonField.setText(point.getCoordinates().getLongitude().getDegrees()+"");
+		}
+		if(placemark.getGeometry() instanceof KMLModel){
+			KMLModel model = (KMLModel) placemark.getGeometry();
+			latField.setText(model.getLocation().getLatitude()+"");
+			lonField.setText(model.getLocation().getLongitude()+"");
 		}
 	}
 }
