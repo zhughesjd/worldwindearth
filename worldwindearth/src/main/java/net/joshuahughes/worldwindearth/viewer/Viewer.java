@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
@@ -109,9 +108,23 @@ public class Viewer extends JPanel{
     }
     protected void adjust() {
         Position position = dragger.getPosition();
-        if(feature!=null && feature instanceof KMLPlacemark && ((KMLPlacemark)feature).getGeometry() instanceof KMLPoint){
+        if(feature!=null && feature instanceof KMLPlacemark){
             KMLPlacemark placemark = (KMLPlacemark) feature;
-            placemark.applyChange(Support.create(position.getLatitude().getDegrees(),position.getLongitude().getDegrees()));
+            if(placemark.getGeometry() instanceof KMLPoint)
+                placemark.applyChange(Support.create(position.getLatitude().getDegrees(),position.getLongitude().getDegrees()));
+            if(placemark.getGeometry( ) instanceof KMLLineString){
+                KMLLineString lineString = ( KMLLineString ) placemark.getGeometry( );
+                ArrayList<WWIcon> iconList = new ArrayList<>();
+                for(WWIcon icon : editLayer.getIcons( ))
+                    iconList.add( icon );
+                sort(iconList);
+                List<Position> list = new ArrayList<>();
+                for(WWIcon icon : iconList)
+                    list.add( new Position(icon.getPosition( ),0) );
+                lineString.setField( Support.KMLTag.coordinates.name( ), new PositionList(list) );
+                placemark.applyChange( placemark );
+                wwd.redraw( );
+            }
         }
         ArrayList<Position> newList = new ArrayList<Position>();
         for(WWIcon icon : editLayer.getIcons()) newList.add(icon.getPosition());
@@ -166,14 +179,13 @@ public class Viewer extends JPanel{
             editController = new KMLController(root);
             kmlLayer.addRenderable(editController);
             feature = candidateFeature;
-            LinkedHashSet<UserFacingIcon> set = new LinkedHashSet<>();
             if(placemark.getGeometry() instanceof KMLPoint || placemark.getGeometry() instanceof KMLModel){
                 BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
                 Graphics2D g2d = image.createGraphics();
                 g2d.setBackground(new Color(0,0,0,1));
                 g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
                 Position position = placemark.getGeometry() instanceof KMLPoint? ((KMLPoint) placemark.getGeometry()).getCoordinates():((KMLModel) placemark.getGeometry()).getLocation().getPosition();
-                set.add(new UserFacingIcon(image,position));
+                editLayer.addIcon(new UserFacingIcon(image,position));
             }
             if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLLinearRing){
                 MouseAdapter adapter = new MouseAdapter( )
@@ -192,78 +204,70 @@ public class Viewer extends JPanel{
                             g2d.setBackground(Color.red);
                             g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
                             UserFacingIcon newIcon = new UserFacingIcon(image,wwd.getCurrentPosition( ));
-                            newIcon.setValue( "index", index++ );
+                            newIcon.setValue( Integer.class.getSimpleName( ), index++ );
                             editLayer.addIcon(newIcon);
-                            if(placemark.getGeometry() instanceof KMLLineString){
-                                KMLLineString lineString = ( KMLLineString ) placemark.getGeometry( );
-                                ArrayList<WWIcon> iconList = new ArrayList<>();
-                                for(WWIcon icon : editLayer.getIcons( ))
-                                    iconList.add( icon );
-                                Collections.sort( iconList,new Comparator<WWIcon>(){
-                                    public int compare(WWIcon i1,WWIcon i2){
-                                        return ((Integer)i1.getValue( "index" )).compareTo((Integer)i2.getValue( "index" ));
-                                    }
-
-                                    @Override
-                                    public Comparator<WWIcon> reversed( )
-                                    {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public Comparator<WWIcon> thenComparing( Comparator<? super WWIcon> other )
-                                    {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public <U> Comparator<WWIcon> thenComparing( Function<? super WWIcon, ? extends U> keyExtractor, Comparator<? super U> keyComparator )
-                                    {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public <U extends Comparable<? super U>> Comparator<WWIcon> thenComparing( Function<? super WWIcon, ? extends U> keyExtractor )
-                                    {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public Comparator<WWIcon> thenComparingInt( ToIntFunction<? super WWIcon> keyExtractor )
-                                    {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public Comparator<WWIcon> thenComparingLong( ToLongFunction<? super WWIcon> keyExtractor )
-                                    {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public Comparator<WWIcon> thenComparingDouble( ToDoubleFunction<? super WWIcon> keyExtractor )
-                                    {
-                                        return null;
-                                    }
-                                });
-                                List<Position> list = new ArrayList<>();
-                                for(WWIcon icon : iconList)
-                                    list.add( new Position(icon.getPosition( ),0) );
-                                lineString.setField( Support.KMLTag.coordinates.name( ), new PositionList(list) );
-                                placemark.applyChange( placemark );
-                                wwd.redraw( );
-                            }
+                            if(placemark.getGeometry() instanceof KMLLineString)
+                                adjust();
                         }
                     }
                 };
                 this.getWwd( ).addMouseListener(adapter);
                 this.getWwd( ).addMouseMotionListener(adapter);
             }
-            for(UserFacingIcon icon : set)
-                editLayer.addIcon(icon);
             wwd.redraw();
 
         }
+    }
+    protected void sort( ArrayList<WWIcon> iconList )
+    {
+        Collections.sort( iconList,new Comparator<WWIcon>(){
+            public int compare(WWIcon i1,WWIcon i2){
+                return ((Integer)i1.getValue( Integer.class.getSimpleName( ) )).compareTo((Integer)i2.getValue( Integer.class.getSimpleName( ) ));
+            }
+
+            @Override
+            public Comparator<WWIcon> reversed( )
+            {
+                return null;
+            }
+
+            @Override
+            public Comparator<WWIcon> thenComparing( Comparator<? super WWIcon> other )
+            {
+                return null;
+            }
+
+            @Override
+            public <U> Comparator<WWIcon> thenComparing( Function<? super WWIcon, ? extends U> keyExtractor, Comparator<? super U> keyComparator )
+            {
+                return null;
+            }
+
+            @Override
+            public <U extends Comparable<? super U>> Comparator<WWIcon> thenComparing( Function<? super WWIcon, ? extends U> keyExtractor )
+            {
+                return null;
+            }
+
+            @Override
+            public Comparator<WWIcon> thenComparingInt( ToIntFunction<? super WWIcon> keyExtractor )
+            {
+                return null;
+            }
+
+            @Override
+            public Comparator<WWIcon> thenComparingLong( ToLongFunction<? super WWIcon> keyExtractor )
+            {
+                return null;
+            }
+
+            @Override
+            public Comparator<WWIcon> thenComparingDouble( ToDoubleFunction<? super WWIcon> keyExtractor )
+            {
+                return null;
+            }
+        });
+        
     }
     public Sector getViewExtents(){
         View view = wwd.getView();
