@@ -10,6 +10,8 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -31,10 +33,13 @@ public class LatitdueLongitudePanel extends AbstractPanel
 				@Override
 				public void propertyChange(PropertyChangeEvent event) {
 					Object object = event.getNewValue();
-					if(object != null && object instanceof Position){
-						Position position = (Position) object;
-						latField.setText(position.getLatitude().getDegrees()+"");
-						lonField.setText(position.getLongitude().getDegrees()+"");
+					if(object != null && object instanceof List){
+						List<?> list = (List<?>) object;
+						if(list.size()>0 && list.get(0) instanceof Position){
+							Position position = (Position) list.get(0);
+							latField.setText(position.getLatitude().getDegrees()+"");
+							lonField.setText(position.getLongitude().getDegrees()+"");
+						}
 					}
 				}
 			});
@@ -52,8 +57,8 @@ public class LatitdueLongitudePanel extends AbstractPanel
 						double longitude = Double.parseDouble(lonField.getText().trim());
 						Position oldPosition = ((KMLPoint)placemark.getGeometry()).getCoordinates();
 						placemark.applyChange( Support.create(latitude,longitude) );
-						placemark.getRoot().firePropertyChange(Position.class.getName(), oldPosition, ((KMLPoint)placemark.getGeometry()).getCoordinates());
-						
+						placemark.getRoot().firePropertyChange(Position.class.getName(), Arrays.asList(oldPosition), Arrays.asList(((KMLPoint)placemark.getGeometry()).getCoordinates()));
+
 					}catch(NumberFormatException exception){
 						latField.setText(lat+"");
 						lonField.setText(lon+"");
@@ -61,7 +66,7 @@ public class LatitdueLongitudePanel extends AbstractPanel
 				}
 				@Override
 				public void focusGained(FocusEvent e) {
-					
+
 					lat = Double.parseDouble(latField.getText().trim());
 					lon = Double.parseDouble(lonField.getText().trim());
 				}
