@@ -53,6 +53,8 @@ public class AddEditDialog extends JDialog{
 		namePanel.add(nameField,BorderLayout.CENTER);
 		if(feature instanceof KMLPlacemark && ((KMLPlacemark)feature).getGeometry( ) instanceof KMLPoint)
 		    namePanel.add(iconButton,BorderLayout.EAST);
+		if((feature instanceof KMLPlacemark && ((KMLPlacemark)feature).getGeometry( ) instanceof KMLModel) || feature instanceof KMLPhotoOverlay || feature instanceof KMLGroundOverlay || feature instanceof KMLNetworkLink)
+		    namePanel.add(new LinkPanel(),BorderLayout.SOUTH);
 		panel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints( );
         gbc.gridx=gbc.gridy=0;
