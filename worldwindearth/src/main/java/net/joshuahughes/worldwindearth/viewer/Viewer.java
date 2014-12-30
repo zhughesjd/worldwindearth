@@ -170,7 +170,7 @@ public class Viewer extends JPanel{
             if(placemark.getGeometry() instanceof KMLPoint || placemark.getGeometry() instanceof KMLModel){
                 BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
                 Graphics2D g2d = image.createGraphics();
-                g2d.setBackground(Color.red);
+                g2d.setBackground(new Color(0,0,0,1));
                 g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
                 Position position = placemark.getGeometry() instanceof KMLPoint? ((KMLPoint) placemark.getGeometry()).getCoordinates():((KMLModel) placemark.getGeometry()).getLocation().getPosition();
                 feature.getRoot( ).addPropertyChangeListener( new PropertyChangeListener() {
