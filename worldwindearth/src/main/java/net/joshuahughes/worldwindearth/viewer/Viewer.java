@@ -198,6 +198,7 @@ public class Viewer extends JPanel{
                         dragged=true;
                     }
                     public void mouseReleased(MouseEvent event){
+                    	if(event.getButton() == MouseEvent.BUTTON3) return;
                         if(!dragged){
                             BufferedImage image = new BufferedImage(5,5,BufferedImage.TYPE_4BYTE_ABGR);
                             Graphics2D g2d = image.createGraphics();
@@ -209,6 +210,16 @@ public class Viewer extends JPanel{
                             if(placemark.getGeometry() instanceof KMLLineString)
                                 adjust();
                         }
+                    }
+                    public void mouseClicked(MouseEvent event){
+                    	if(event.getButton() == MouseEvent.BUTTON3){
+                    		WWIcon lastIcon =  null;
+                    		for(WWIcon icon : editLayer.getIcons())
+                    			lastIcon = lastIcon==null?icon:(int)icon.getValue(Integer.class.getSimpleName()) > (int)lastIcon.getValue(Integer.class.getSimpleName())?icon:lastIcon;
+                    		if(lastIcon!=null)
+                    			editLayer.removeIcon(lastIcon);
+                    		adjust();
+                    	}
                     }
                 };
                 this.getWwd( ).addMouseListener(adapter);
