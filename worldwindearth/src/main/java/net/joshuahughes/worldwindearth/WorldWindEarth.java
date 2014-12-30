@@ -130,7 +130,7 @@ public class WorldWindEarth extends JFrame{
             if(Add.Path.equals( add ))
                 kmlString+="<Placemark><LineString><tessellate>1</tessellate><coordinates></coordinates></LineString></Placemark>";
             if(Add.Polygon.equals( add ))
-                kmlString+="<Placemark><outerBoundaryIs><LinearRing><coordinates></coordinates></LinearRing></outerBoundaryIs></Placemark>";
+                kmlString+="<Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates></coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>";
             if(Add.Model.equals( add ))
                 kmlString+="<Placemark><Model><Location><longitude>"+viewer.getPosition( ).getLongitude( ).getDegrees( )+"</longitude><latitude>"+viewer.getPosition( ).getLatitude( ).getDegrees( )+"</latitude><altitude>0</altitude></Location><Orientation><heading>0</heading><tilt>0</tilt><roll>0</roll></Orientation><Scale><x>1</x><y>1</y><z>1</z></Scale><Link></Link></Model></Placemark>";
             if(Add.Photo.equals( add ))

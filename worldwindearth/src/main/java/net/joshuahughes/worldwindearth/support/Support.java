@@ -648,4 +648,15 @@ public class Support {
 		}
 		return null;
 	}
+	public static KMLPoint createPoint(double lat,double lon){
+		try
+		{
+			return (KMLPoint) (( KMLPlacemark ) KMLRoot.createAndParse(new ByteArrayInputStream(("<kml><Placemark><name>Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark></kml>").getBytes( ))).getFeature( )).getGeometry();
+		}
+		catch ( Exception e )
+		{
+			e.printStackTrace( );
+		}
+		return null;
+	}
 }

@@ -21,11 +21,13 @@ import gov.nasa.worldwind.layers.ViewControlsSelectListener;
 import gov.nasa.worldwind.layers.WorldMapLayer;
 import gov.nasa.worldwind.layers.Earth.BMNGOneImage;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
+import gov.nasa.worldwind.ogc.kml.KMLAbstractGeometry;
 import gov.nasa.worldwind.ogc.kml.KMLLineString;
 import gov.nasa.worldwind.ogc.kml.KMLLinearRing;
 import gov.nasa.worldwind.ogc.kml.KMLModel;
 import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
 import gov.nasa.worldwind.ogc.kml.KMLPoint;
+import gov.nasa.worldwind.ogc.kml.KMLPolygon;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 import gov.nasa.worldwind.ogc.kml.impl.KMLController;
 import gov.nasa.worldwind.render.UserFacingIcon;
@@ -110,10 +112,13 @@ public class Viewer extends JPanel{
         Position position = dragger.getPosition();
         if(feature!=null && feature instanceof KMLPlacemark){
             KMLPlacemark placemark = (KMLPlacemark) feature;
-            if(placemark.getGeometry() instanceof KMLPoint)
-                placemark.applyChange(Support.create(position.getLatitude().getDegrees(),position.getLongitude().getDegrees()));
-            if(placemark.getGeometry( ) instanceof KMLLineString){
-                KMLLineString lineString = ( KMLLineString ) placemark.getGeometry( );
+            KMLAbstractGeometry geometry = placemark.getGeometry();
+            if(geometry instanceof KMLPolygon)
+            	geometry = ((KMLPolygon)geometry).getOuterBoundary();
+            Object value = null;
+            if(geometry instanceof KMLPoint)
+            	value = Support.createPoint(position.getLatitude().getDegrees(),position.getLongitude().getDegrees());
+            if(geometry instanceof KMLLineString || geometry instanceof KMLLinearRing){
                 ArrayList<WWIcon> iconList = new ArrayList<>();
                 for(WWIcon icon : editLayer.getIcons( ))
                     iconList.add( icon );
@@ -121,10 +126,11 @@ public class Viewer extends JPanel{
                 List<Position> list = new ArrayList<>();
                 for(WWIcon icon : iconList)
                     list.add( new Position(icon.getPosition( ),0) );
-                lineString.setField( Support.KMLTag.coordinates.name( ), new PositionList(list) );
-                placemark.applyChange( placemark );
-                wwd.redraw( );
+                value = new PositionList(list);
             }
+            geometry.setField( Support.KMLTag.coordinates.name( ), value);
+            placemark.applyChange( placemark );
+            wwd.redraw( );
         }
         ArrayList<Position> newList = new ArrayList<Position>();
         for(WWIcon icon : editLayer.getIcons()) newList.add(icon.getPosition());
@@ -187,7 +193,7 @@ public class Viewer extends JPanel{
                 Position position = placemark.getGeometry() instanceof KMLPoint? ((KMLPoint) placemark.getGeometry()).getCoordinates():((KMLModel) placemark.getGeometry()).getLocation().getPosition();
                 editLayer.addIcon(new UserFacingIcon(image,position));
             }
-            if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLLinearRing){
+            if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon){
                 MouseAdapter adapter = new MouseAdapter( )
                 {
                     private boolean dragged;
@@ -207,7 +213,7 @@ public class Viewer extends JPanel{
                             UserFacingIcon newIcon = new UserFacingIcon(image,wwd.getCurrentPosition( ));
                             newIcon.setValue( Integer.class.getSimpleName( ), index++ );
                             editLayer.addIcon(newIcon);
-                            if(placemark.getGeometry() instanceof KMLLineString)
+                            if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon)
                                 adjust();
                         }
                     }
