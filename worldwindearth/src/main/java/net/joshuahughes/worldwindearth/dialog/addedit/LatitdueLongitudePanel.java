@@ -1,6 +1,5 @@
 package net.joshuahughes.worldwindearth.dialog.addedit;
 
-import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.ogc.kml.KMLModel;
 import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
 import gov.nasa.worldwind.ogc.kml.KMLPoint;
@@ -11,7 +10,6 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -45,9 +43,9 @@ public class LatitdueLongitudePanel extends AbstractPanel
 					try{
 						double latitude = Double.parseDouble(latField.getText().trim());
 						double longitude = Double.parseDouble(lonField.getText().trim());
-						Position oldPosition = ((KMLPoint)placemark.getGeometry()).getCoordinates();
-						placemark.applyChange( Support.create(latitude,longitude) );
-						placemark.getRoot().firePropertyChange(Position.class.getName(), Arrays.asList(oldPosition), Arrays.asList(((KMLPoint)placemark.getGeometry()).getCoordinates()));
+						KMLPoint point = (KMLPoint)placemark.getGeometry();
+						point.applyChange( Support.createPoint(latitude,longitude) );
+						placemark.getRoot().firePropertyChange("",null,null);
 
 					}catch(NumberFormatException exception){
 						latField.setText(lat+"");

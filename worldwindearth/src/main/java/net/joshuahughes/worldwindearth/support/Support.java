@@ -635,23 +635,12 @@ public class Support {
 		if(sm.getName().equals("setAbstractView") && gm.getName().equals("getView")) return true;
 		return sm.getName( ).equals( "s"+gm.getName( ).substring( 1, gm.getName( ).length( ) ) );
 	}
-	public static KMLPlacemark create(double lat,double lon){
-		try
-		{
-			ByteArrayInputStream kmlString = new ByteArrayInputStream(("<kml><Placemark><name>Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark></kml>").getBytes( ));
-			KMLPlacemark placemark = ( KMLPlacemark ) KMLRoot.createAndParse(kmlString).getFeature( );
-			return placemark;
-		}
-		catch ( Exception e )
-		{
-			e.printStackTrace( );
-		}
-		return null;
-	}
 	public static KMLPoint createPoint(double lat,double lon){
 		try
 		{
-			return (KMLPoint) (( KMLPlacemark ) KMLRoot.createAndParse(new ByteArrayInputStream(("<kml><Placemark><name>Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark></kml>").getBytes( ))).getFeature( )).getGeometry();
+		    KMLPoint point = (KMLPoint) (( KMLPlacemark ) KMLRoot.createAndParse(new ByteArrayInputStream(("<kml><Placemark><name>Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark></kml>").getBytes( ))).getFeature( )).getGeometry();
+            point.setField( Support.KMLTag.coordinates.name( ), point );
+			return point;
 		}
 		catch ( Exception e )
 		{
