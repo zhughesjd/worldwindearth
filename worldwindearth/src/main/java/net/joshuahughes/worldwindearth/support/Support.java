@@ -131,7 +131,7 @@ import de.micromata.opengis.kml.v_2_2_0.gx.Tour;
 import de.micromata.opengis.kml.v_2_2_0.xal.AddressDetails;
 
 public class Support {
-	public static enum KMLTag{name,description, coordinates, id, futurevisibility}
+	public static enum KMLTag{name,description, coordinates, id, futurevisibility, north,east,south,west}
 	public static Document convert(KMLDocument get) {
 		if(get == null) return null;
 		Document set = new Document();
@@ -637,17 +637,7 @@ public class Support {
 		return sm.getName( ).equals( "s"+gm.getName( ).substring( 1, gm.getName( ).length( ) ) );
 	}
 	public static KMLPoint createPoint(double lat,double lon){
-		try
-		{
-		    KMLPoint point = (KMLPoint) (( KMLPlacemark ) KMLRoot.createAndParse(new ByteArrayInputStream(("<kml><Placemark><name>Placemark</name><Point><coordinates>"+lon+","+lat+",0</coordinates></Point></Placemark></kml>").getBytes( ))).getFeature( )).getGeometry();
-            point.setField( Support.KMLTag.coordinates.name( ), point );
-			return point;
-		}
-		catch ( Exception e )
-		{
-			e.printStackTrace( );
-		}
-		return null;
+	    return createPoint(Position.fromDegrees( lat, lon ));
 	}
 	public static KMLAbstractFeature clone(KMLAbstractFeature feature) {
 		Kml kml = new Kml();
@@ -661,4 +651,18 @@ public class Support {
 		}
 		return null;
 	}
+    public static KMLPoint createPoint( Position position )
+    {
+        try
+        {
+            KMLPoint point = (KMLPoint) (( KMLPlacemark ) KMLRoot.createAndParse(new ByteArrayInputStream(("<kml><Placemark><name>Placemark</name><Point><coordinates>"+position.getLongitude( ).getDegrees( )+","+position.getLatitude( ).getDegrees( )+",0</coordinates></Point></Placemark></kml>").getBytes( ))).getFeature( )).getGeometry();
+            point.setField( Support.KMLTag.coordinates.name( ), point );
+            return point;
+        }
+        catch ( Exception e )
+        {
+            e.printStackTrace( );
+        }
+        return null;
+    }
 }

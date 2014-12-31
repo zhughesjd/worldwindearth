@@ -16,12 +16,15 @@ import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.layers.ScalebarLayer;
 import gov.nasa.worldwind.layers.SkyGradientLayer;
 import gov.nasa.worldwind.layers.StarsLayer;
+import gov.nasa.worldwind.layers.SurfaceImageLayer;
 import gov.nasa.worldwind.layers.ViewControlsLayer;
 import gov.nasa.worldwind.layers.ViewControlsSelectListener;
 import gov.nasa.worldwind.layers.WorldMapLayer;
 import gov.nasa.worldwind.layers.Earth.BMNGOneImage;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractGeometry;
+import gov.nasa.worldwind.ogc.kml.KMLGroundOverlay;
+import gov.nasa.worldwind.ogc.kml.KMLLatLonBox;
 import gov.nasa.worldwind.ogc.kml.KMLLineString;
 import gov.nasa.worldwind.ogc.kml.KMLLinearRing;
 import gov.nasa.worldwind.ogc.kml.KMLModel;
@@ -163,63 +166,81 @@ public class Viewer extends JPanel{
         index=0;
         feature = root.getFeature();
         stopEditing();
-        if(feature !=null && feature instanceof KMLPlacemark){
-            final KMLPlacemark placemark = (KMLPlacemark) feature;
-            editController = new KMLController(feature.getRoot( ));
-            kmlLayer.addRenderable(editController);
-            if(placemark.getGeometry() instanceof KMLPoint || placemark.getGeometry() instanceof KMLModel){
-                BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
-                Graphics2D g2d = image.createGraphics();
-                g2d.setBackground(new Color(0,0,0,1));
-                g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
-                Position position = placemark.getGeometry() instanceof KMLPoint? ((KMLPoint) placemark.getGeometry()).getCoordinates():((KMLModel) placemark.getGeometry()).getLocation().getPosition();
-                feature.getRoot( ).addPropertyChangeListener( new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent event) {
-                        Position position = placemark.getGeometry() instanceof KMLPoint? ((KMLPoint) placemark.getGeometry()).getCoordinates():((KMLModel) placemark.getGeometry()).getLocation().getPosition();
-                        editLayer.getIcons( ).iterator( ).next( ).setPosition( position );
-                    }
-                });
-                editLayer.addIcon(new UserFacingIcon(image,position));
+        if(feature !=null){
+            if(feature instanceof KMLPlacemark){
+                final KMLPlacemark placemark = (KMLPlacemark) feature;
+                editController = new KMLController(feature.getRoot( ));
+                kmlLayer.addRenderable(editController);
+                if(placemark.getGeometry() instanceof KMLPoint || placemark.getGeometry() instanceof KMLModel){
+                    BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
+                    Graphics2D g2d = image.createGraphics();
+                    g2d.setBackground(new Color(0,0,0,1));
+                    g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
+                    Position position = placemark.getGeometry() instanceof KMLPoint? ((KMLPoint) placemark.getGeometry()).getCoordinates():((KMLModel) placemark.getGeometry()).getLocation().getPosition();
+                    feature.getRoot( ).addPropertyChangeListener( new PropertyChangeListener() {
+                        @Override
+                        public void propertyChange(PropertyChangeEvent event) {
+                            Position position = placemark.getGeometry() instanceof KMLPoint? ((KMLPoint) placemark.getGeometry()).getCoordinates():((KMLModel) placemark.getGeometry()).getLocation().getPosition();
+                            editLayer.getIcons( ).iterator( ).next( ).setPosition( position );
+                        }
+                    });
+                    editLayer.addIcon(new UserFacingIcon(image,position));
+                }
+                if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon){
+                    KMLLineString lineString = placemark.getGeometry( ) instanceof KMLLineString?(KMLLineString)placemark.getGeometry( ):((KMLPolygon)placemark.getGeometry( )).getOuterBoundary( );
+                    if(lineString.getCoordinates( )!=null && lineString.getCoordinates( ).list!=null)
+                        for(Position position : lineString.getCoordinates( ).list)
+                            add(position);
+                    addAdapter();
+                }
             }
-            if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon){
-                KMLLineString lineString = placemark.getGeometry( ) instanceof KMLLineString?(KMLLineString)placemark.getGeometry( ):((KMLPolygon)placemark.getGeometry( )).getOuterBoundary( );
-                if(lineString.getCoordinates( )!=null && lineString.getCoordinates( ).list!=null)
-                    for(Position position : lineString.getCoordinates( ).list)
-                        add(position);
-                MouseAdapter adapter = new MouseAdapter( )
-                {
-                    private boolean dragged;
-                    public void mousePressed(MouseEvent event){
-                        dragged=false;
-                    }
-                    public void mouseDragged(MouseEvent event){
-                        dragged=true;
-                    }
-                    public void mouseReleased(MouseEvent event){
-                        if(event.getButton() == MouseEvent.BUTTON3) return;
-                        if(!dragged){
-                            add(wwd.getCurrentPosition( ));
-                            if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon)
-                                wwToKML();
-                        }
-                    }
-                    public void mouseClicked(MouseEvent event){
-                        if(event.getButton() == MouseEvent.BUTTON3){
-                            WWIcon lastIcon =  null;
-                            for(WWIcon icon : editLayer.getIcons())
-                                lastIcon = lastIcon==null?icon:(int)icon.getValue(Integer.class.getSimpleName()) > (int)lastIcon.getValue(Integer.class.getSimpleName())?icon:lastIcon;
-                                if(lastIcon!=null)
-                                    editLayer.removeIcon(lastIcon);
-                                wwToKML();
-                        }
-                    }
-                };
-                this.getWwd( ).addMouseListener(adapter);
-                this.getWwd( ).addMouseMotionListener(adapter);
+            if(feature instanceof KMLGroundOverlay){
+                KMLGroundOverlay overlay = ( KMLGroundOverlay ) feature;
+                KMLLatLonBox box = overlay.getLatLonBox( );
+                add(box);
+                addAdapter();
             }
             wwd.redraw();
         }
+    }
+    private void add( KMLLatLonBox box )
+    {
+        Position nw = Position.fromDegrees( box.getNorth( ),box.getWest( ));
+        
+    }
+    private void addAdapter( )
+    {
+        MouseAdapter adapter = new MouseAdapter( )
+        {
+            private boolean dragged;
+            public void mousePressed(MouseEvent event){
+                dragged=false;
+            }
+            public void mouseDragged(MouseEvent event){
+                dragged=true;
+            }
+            public void mouseReleased(MouseEvent event){
+                if(event.getButton() == MouseEvent.BUTTON3) return;
+                if(!dragged){
+                    if(feature instanceof KMLPlacemark)
+                        add(wwd.getCurrentPosition( ));
+                    wwToKML();
+                }
+            }
+            public void mouseClicked(MouseEvent event){
+                if(event.getButton() == MouseEvent.BUTTON3){
+                    WWIcon lastIcon =  null;
+                    for(WWIcon icon : editLayer.getIcons())
+                        lastIcon = lastIcon==null?icon:(int)icon.getValue(Integer.class.getSimpleName()) > (int)lastIcon.getValue(Integer.class.getSimpleName())?icon:lastIcon;
+                        if(lastIcon!=null)
+                            editLayer.removeIcon(lastIcon);
+                        wwToKML();
+                }
+            }
+        };
+        getWwd( ).addMouseListener(adapter);
+        getWwd( ).addMouseMotionListener(adapter);
+        
     }
     private void add( Position position )
     {
