@@ -19,7 +19,7 @@ import javax.swing.JSplitPane;
 import javax.swing.WindowConstants;
 
 import net.joshuahughes.worldwindearth.dialog.RulerDialog;
-import net.joshuahughes.worldwindearth.dialog.addedit.AddEditDialog;
+import net.joshuahughes.worldwindearth.dialog.addedit.AddPropertiesDialog;
 import net.joshuahughes.worldwindearth.listener.Overlay;
 import net.joshuahughes.worldwindearth.listener.Single;
 import net.joshuahughes.worldwindearth.menubar.MenuBar;
@@ -111,7 +111,7 @@ public class WorldWindEarth extends JFrame{
     public void edit(KMLAbstractFeature feature) {
         if(feature==null) return;
         viewer.edit(feature.getRoot());
-        new AddEditDialog(this,feature);
+        new AddPropertiesDialog(this,feature);
     }
     public void setAddEnabled(boolean enabled) {
         this.menubar.setAddEnabled(enabled);

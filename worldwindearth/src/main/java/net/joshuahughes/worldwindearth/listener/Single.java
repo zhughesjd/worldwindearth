@@ -35,6 +35,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import net.joshuahughes.worldwindearth.WorldWindEarth;
 import net.joshuahughes.worldwindearth.panel.EditorTreeModel;
 import net.joshuahughes.worldwindearth.panel.EditorTreeModel.Type;
+import net.joshuahughes.worldwindearth.panel.PanelTree;
 import net.joshuahughes.worldwindearth.support.Support;
 import de.micromata.opengis.kml.v_2_2_0.Kml;
 
@@ -55,7 +56,7 @@ public enum Single implements Listener{
             });
             if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
                 try{
-                    WorldWindEarth.findWindow((Component) e.getSource()).getPanel().getTreeMap( ).get( Type.Places ).addToSelected( KMLRoot.createAndParse( chooser.getSelectedFile( ) ).getFeature( ) );
+                    WorldWindEarth.findWindow((Component) e.getSource()).getPanel().getTreeMap( ).get( Type.Places ).alterTree( KMLRoot.createAndParse( chooser.getSelectedFile( ) ).getFeature( ) );
                 }catch ( Exception e1 ){
                     e1.printStackTrace();
                 }
@@ -154,7 +155,7 @@ public enum Single implements Listener{
             try {
                 String candidateKMLString = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
                 KMLAbstractFeature feature = KMLRoot.createAndParse(new ByteArrayInputStream(candidateKMLString.getBytes(StandardCharsets.UTF_8))).getFeature();
-                WorldWindEarth.findWindow((Component) e.getSource()).getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).addToSelected(feature);
+                WorldWindEarth.findWindow((Component) e.getSource()).getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).alterTree(feature);
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
@@ -224,7 +225,16 @@ public enum Single implements Listener{
     Properties{
         @Override
         public void actionPerformed(ActionEvent e) {
-            System.out.println(this.name());			
+        	WorldWindEarth earth = WorldWindEarth.findWindow((Component) e.getSource());
+        	PanelTree tree = earth.getPanel().getTreeMap().get(EditorTreeModel.Type.Places);
+        	DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent();	
+        	KMLAbstractFeature feature = (KMLAbstractFeature) node.getUserObject();
+        	feature.setField(Support.KMLTag.futurevisibility.name(),feature.getVisibility());
+        	if(!feature.hasField(Support.KMLTag.id.name()))feature.setField(Support.KMLTag.id.name(),tree.getModel().createUniqueId());
+        	feature.setVisibility(false);
+        	KMLAbstractFeature clone = Support.clone(feature);
+        	clone.setVisibility(true);
+        	earth.edit(clone);
         }
     },
 

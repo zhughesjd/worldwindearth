@@ -57,6 +57,7 @@ import gov.nasa.worldwind.util.xml.atom.AtomPerson;
 import gov.nasa.worldwind.util.xml.xal.XALAddressDetails;
 
 import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -645,6 +646,18 @@ public class Support {
 		catch ( Exception e )
 		{
 			e.printStackTrace( );
+		}
+		return null;
+	}
+	public static KMLAbstractFeature clone(KMLAbstractFeature feature) {
+		Kml kml = new Kml();
+		kml.setFeature(convert(feature));
+		StringWriter writer = new StringWriter();
+		kml.marshal(writer);
+		try {
+			return KMLRoot.createAndParse(new ByteArrayInputStream(writer.toString().getBytes())).getFeature();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return null;
 	}

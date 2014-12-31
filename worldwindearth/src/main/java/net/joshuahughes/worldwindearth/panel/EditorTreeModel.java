@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.Enumeration;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -138,5 +139,28 @@ public class EditorTreeModel extends DefaultTreeModel{
 			e.printStackTrace();
 		}
 		
+	}
+	public String createUniqueId() {
+		return max(getRoot(),0)+"";
+	}
+	private int max(DefaultMutableTreeNode node, int currentMax) {
+		KMLAbstractFeature feature = (KMLAbstractFeature) node.getUserObject();
+		Object id  = feature.getField(Support.KMLTag.id.name());
+		if(id!=null && id instanceof Integer)currentMax = Math.max(currentMax, (int) id);
+		Enumeration<?> enumeration = node.children();
+		while(enumeration.hasMoreElements())
+			currentMax = Math.max(currentMax, max((DefaultMutableTreeNode) enumeration.nextElement(),currentMax));
+		return currentMax;
+	}
+	public void remove(DefaultMutableTreeNode node,String deleteId) {
+		KMLAbstractFeature feature = (KMLAbstractFeature) node.getUserObject();
+		Object id  = feature.getField(Support.KMLTag.id.name());
+		if(id!=null && id instanceof String && id.equals(deleteId)){
+			this.removeNodeFromParent(node);
+			return;
+		}
+		Enumeration<?> enumeration = node.children();
+		while(enumeration.hasMoreElements())
+			remove((DefaultMutableTreeNode) enumeration.nextElement(),deleteId);
 	}
 }

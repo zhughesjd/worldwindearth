@@ -158,7 +158,8 @@ public class PanelTree extends CheckBoxTree{
         }
         return "no tip";
     }
-    public void addToSelected(KMLAbstractFeature feature) {
+    public void alterTree(KMLAbstractFeature feature) {
+    	remove(feature.getField(Support.KMLTag.id.name()).toString());
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) ((DefaultMutableTreeNode) this.getModel().getRoot()).getLastChild();
         if(getSelectionPath()!=null){
             node = (DefaultMutableTreeNode) getSelectionPath().getLastPathComponent();
@@ -167,7 +168,10 @@ public class PanelTree extends CheckBoxTree{
         EditorTreeModel model = (EditorTreeModel) getModel();
         model.add(node,feature);
     }
-    public EditorTreeModel getModel(){
+    public void remove(String id) {
+    	getModel().remove(getModel().getRoot(),id);
+	}
+	public EditorTreeModel getModel(){
         return ( EditorTreeModel ) super.getModel( );
     }
     public void removeSelection( )
@@ -219,5 +223,4 @@ public class PanelTree extends CheckBoxTree{
         }
 
     }
-
 }

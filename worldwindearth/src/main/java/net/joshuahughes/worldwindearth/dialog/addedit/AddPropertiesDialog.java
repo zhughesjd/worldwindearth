@@ -32,7 +32,7 @@ import net.joshuahughes.worldwindearth.WorldWindEarth;
 import net.joshuahughes.worldwindearth.panel.EditorTreeModel;
 import net.joshuahughes.worldwindearth.support.Support;
 
-public class AddEditDialog extends JDialog{
+public class AddPropertiesDialog extends JDialog{
 	private static final long serialVersionUID = 881876593112086204L;
 	JTextField nameField = new JTextField("Untitled");
 	WorldWindEarth earth;
@@ -40,7 +40,7 @@ public class AddEditDialog extends JDialog{
 	JTabbedPane tabbedPane = new JTabbedPane();
 	JButton okButton = new JButton("OK");
 	JButton cancelButton = new JButton("Cancel");
-	public AddEditDialog(final WorldWindEarth earth,final KMLAbstractFeature feature) {
+	public AddPropertiesDialog(final WorldWindEarth earth,final KMLAbstractFeature feature) {
 		super(earth,false);
 		String prefix = feature.getRoot( ) == ((KMLFolder)earth.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).getModel( ).getRoot( ).getUserObject( )).getRoot( )?"Edit":"New";
 		setSize(500,500);
@@ -49,7 +49,7 @@ public class AddEditDialog extends JDialog{
 		JPanel namePanel = new JPanel(new FlowLayout());
 		namePanel.setLayout(new BorderLayout());
         namePanel.add(new JLabel("Name:"),BorderLayout.WEST);
-        nameField.setText( "Untitled "+feature.getField(Support.KMLTag.name.name()));
+        nameField.setText(feature.getName());
 		namePanel.add(nameField,BorderLayout.CENTER);
 		if(feature instanceof KMLPlacemark && ((KMLPlacemark)feature).getGeometry( ) instanceof KMLPoint)
 		    namePanel.add(iconButton,BorderLayout.EAST);
@@ -78,7 +78,7 @@ public class AddEditDialog extends JDialog{
 		addComponentListener( new ComponentAdapter() {
 			public void componentHidden(ComponentEvent event){
 				earth.getViewer().stopEditing();
-				AddEditDialog.this.earth.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).setEnabled( true );
+				AddPropertiesDialog.this.earth.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).setEnabled( true );
 			}
 		});
 		setTitle("World Wind Earth - "+prefix+" "+feature.getField(Support.KMLTag.name.name()));
@@ -86,16 +86,16 @@ public class AddEditDialog extends JDialog{
 		okButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				earth.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).addToSelected(feature);
-				AddEditDialog.this.setVisible(false);
-				AddEditDialog.this.earth.setAddEnabled(true);
+				earth.getPanel( ).getTreeMap( ).get( EditorTreeModel.Type.Places ).alterTree(feature);
+				AddPropertiesDialog.this.setVisible(false);
+				AddPropertiesDialog.this.earth.setAddEnabled(true);
 			}
 		});
 		cancelButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				AddEditDialog.this.setVisible(false);
-				AddEditDialog.this.earth.setAddEnabled(true);
+				AddPropertiesDialog.this.setVisible(false);
+				AddPropertiesDialog.this.earth.setAddEnabled(true);
 			}
 		});
 		nameField.addFocusListener(new FocusAdapter() {

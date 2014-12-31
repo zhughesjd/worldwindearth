@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 
 import net.joshuahughes.worldwindearth.WorldWindEarth;
+import net.joshuahughes.worldwindearth.panel.EditorTreeModel;
 import net.joshuahughes.worldwindearth.support.Support;
 
 public enum Add implements Listener{
@@ -24,7 +25,8 @@ public enum Add implements Listener{
     public void actionPerformed(ActionEvent e) {
         WorldWindEarth earth = WorldWindEarth.findWindow( (Component)e.getSource( ) );
         KMLAbstractFeature feature = create(this,earth.getViewer( ).getPosition( ));
-        feature.setField( Support.KMLTag.name.name(),name( ).replace('_', ' ') );
+        feature.setField(Support.KMLTag.name.name(),"Untitled"+name( ).replace('_', ' ') );
+        feature.setField(Support.KMLTag.id.name(),earth.getPanel().getTreeMap().get(EditorTreeModel.Type.Places).getModel().createUniqueId());
         earth.edit( feature );
     }
     private static long id = 0;
@@ -32,6 +34,14 @@ public enum Add implements Listener{
     {
         try
         {
+        	// *****
+        	// *****
+        	// *****
+        	//	Model:
+        	//	http://earth-api-samples.googlecode.com/svn/trunk/examples/static/splotchy_box.dae
+        	// *****
+        	// *****
+        	// *****
             String kmlString = "<kml>";
             if(Add.Folder.equals( add ))
                 kmlString +="<Folder></Folder>";
