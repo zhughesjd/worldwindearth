@@ -141,12 +141,19 @@ public class EditorTreeModel extends DefaultTreeModel{
 		
 	}
 	public String createUniqueId() {
-		return max(getRoot(),0)+"";
+		return (max(getRoot(),0)+1)+"";
 	}
 	private int max(DefaultMutableTreeNode node, int currentMax) {
 		KMLAbstractFeature feature = (KMLAbstractFeature) node.getUserObject();
 		Object id  = feature.getField(Support.KMLTag.id.name());
-		if(id!=null && id instanceof Integer)currentMax = Math.max(currentMax, (int) id);
+		if(id!=null){
+		    try{
+		        int intId = Integer.parseInt( id.toString( ) );
+	            currentMax = Math.max(currentMax, intId);
+		    }catch(Exception e){
+		        
+		    }
+		}
 		Enumeration<?> enumeration = node.children();
 		while(enumeration.hasMoreElements())
 			currentMax = Math.max(currentMax, max((DefaultMutableTreeNode) enumeration.nextElement(),currentMax));

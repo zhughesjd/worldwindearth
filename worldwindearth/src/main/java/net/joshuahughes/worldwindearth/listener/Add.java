@@ -26,6 +26,7 @@ public enum Add implements Listener{
         WorldWindEarth earth = WorldWindEarth.findWindow( (Component)e.getSource( ) );
         KMLAbstractFeature feature = create(this,earth.getViewer( ).getPosition( ));
         feature.setField(Support.KMLTag.name.name(),"Untitled"+name( ).replace('_', ' ') );
+        System.out.println(earth.getPanel().getTreeMap().get(EditorTreeModel.Type.Places).getModel().createUniqueId());
         feature.setField(Support.KMLTag.id.name(),earth.getPanel().getTreeMap().get(EditorTreeModel.Type.Places).getModel().createUniqueId());
         earth.edit( feature );
     }

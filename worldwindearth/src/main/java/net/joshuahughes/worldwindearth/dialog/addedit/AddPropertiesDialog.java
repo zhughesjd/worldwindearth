@@ -103,6 +103,8 @@ public class AddPropertiesDialog extends JDialog{
 			@Override
 			public void focusLost(FocusEvent e) {
 				feature.setField(Support.KMLTag.name.name(),nameField.getText());
+				feature.applyChange( feature );
+				earth.getViewer( ).getWwd( ).redraw( );
 			}
 			
 		});
