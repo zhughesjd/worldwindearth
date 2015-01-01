@@ -33,11 +33,11 @@ public enum Add implements Listener{
         if(feature instanceof KMLPlacemark && ((KMLPlacemark)feature).getGeometry( ) instanceof KMLPoint)((KMLPoint)((KMLPlacemark)feature).getGeometry( )).applyChange( Support.createPoint( earth.getViewer().getPosition() ) );
         if(feature instanceof KMLGroundOverlay){
             KMLGroundOverlay overlay = ( KMLGroundOverlay ) feature;
-            Sector sector = earth.getViewer( ).getViewExtents( );
-            overlay.getLatLonBox( ).setField( Support.KMLTag.north.name(), sector.getMaxLatitude( ) );;
-            overlay.getLatLonBox( ).setField( Support.KMLTag.south.name(), sector.getMinLatitude( ) );;
-            overlay.getLatLonBox( ).setField( Support.KMLTag.east.name(), sector.getMaxLongitude( ) );;
-            overlay.getLatLonBox( ).setField( Support.KMLTag.west.name(), sector.getMinLongitude( ) );;
+            Sector sector = earth.getViewer( ).getWwd().getSceneController().getDrawContext().getVisibleSector();
+            overlay.getLatLonBox( ).setField( Support.KMLTag.north.name(), sector.getMaxLatitude( ).getDegrees() );
+            overlay.getLatLonBox( ).setField( Support.KMLTag.south.name(), sector.getMinLatitude( ).getDegrees() );
+            overlay.getLatLonBox( ).setField( Support.KMLTag.east.name(), sector.getMaxLongitude( ).getDegrees() );
+            overlay.getLatLonBox( ).setField( Support.KMLTag.west.name(), sector.getMinLongitude( ).getDegrees() );
             overlay.applyChange( overlay );
         }
         earth.edit( feature );

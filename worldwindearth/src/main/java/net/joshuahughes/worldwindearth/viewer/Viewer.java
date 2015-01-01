@@ -1,14 +1,11 @@
 package net.joshuahughes.worldwindearth.viewer;
 
 import gov.nasa.worldwind.BasicModel;
-import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.event.SelectListener;
-import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Position.PositionList;
-import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.IconLayer;
 import gov.nasa.worldwind.layers.LatLonGraticuleLayer;
 import gov.nasa.worldwind.layers.Layer;
@@ -16,7 +13,6 @@ import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.layers.ScalebarLayer;
 import gov.nasa.worldwind.layers.SkyGradientLayer;
 import gov.nasa.worldwind.layers.StarsLayer;
-import gov.nasa.worldwind.layers.SurfaceImageLayer;
 import gov.nasa.worldwind.layers.ViewControlsLayer;
 import gov.nasa.worldwind.layers.ViewControlsSelectListener;
 import gov.nasa.worldwind.layers.WorldMapLayer;
@@ -24,6 +20,7 @@ import gov.nasa.worldwind.layers.Earth.BMNGOneImage;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractGeometry;
 import gov.nasa.worldwind.ogc.kml.KMLGroundOverlay;
+import gov.nasa.worldwind.ogc.kml.KMLIcon;
 import gov.nasa.worldwind.ogc.kml.KMLLatLonBox;
 import gov.nasa.worldwind.ogc.kml.KMLLineString;
 import gov.nasa.worldwind.ogc.kml.KMLLinearRing;
@@ -42,7 +39,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -50,6 +46,8 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -59,6 +57,7 @@ import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 import net.joshuahughes.worldwindearth.listener.Explore;
@@ -196,6 +195,23 @@ public class Viewer extends JPanel{
             }
             if(feature instanceof KMLGroundOverlay){
                 KMLGroundOverlay overlay = ( KMLGroundOverlay ) feature;
+                KMLIcon icon = overlay.getIcon();
+                icon.setField(Support.KMLTag.futurehref.name(),icon.getHref());
+                BufferedImage image = Support.invalidImage();
+                try {
+					 image = ImageIO.read(new File(icon.getHref()));
+				} catch (IOException e) {
+				}
+                try {
+					File tempFile = File.createTempFile("file","png");
+					ImageIO.write(image, "png",tempFile);
+					icon.setField(Support.KMLTag.href.name(), tempFile.getCanonicalPath());
+					icon.applyChange(icon);
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+                
                 KMLLatLonBox box = overlay.getLatLonBox( );
                 add(box);
                 addAdapter();
@@ -205,8 +221,22 @@ public class Viewer extends JPanel{
     }
     private void add( KMLLatLonBox box )
     {
-        Position nw = Position.fromDegrees( box.getNorth( ),box.getWest( ));
-        
+    	double n = box.getNorth();
+    	double s = box.getSouth();
+    	double e = box.getEast();
+    	double w = box.getWest();
+        Position nw = Position.fromDegrees( n,w );
+        Position ne = Position.fromDegrees( n,e );
+        Position se = Position.fromDegrees( s,e );
+        Position sw = Position.fromDegrees( s,w );
+        for(Position posit : new Position[]{nw,ne,se,sw}){
+            BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
+            Graphics2D g2d = image.createGraphics();
+            g2d.setBackground(Color.red);
+            g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
+        	UserFacingIcon icon = new UserFacingIcon(image, posit);
+        	editLayer.addIcon(icon);
+        }
     }
     private void addAdapter( )
     {
@@ -302,18 +332,6 @@ public class Viewer extends JPanel{
             }
         });
 
-    }
-    public Sector getViewExtents(){
-        View view = wwd.getView();
-        Rectangle viewport = view.getViewport();
-        ArrayList<LatLon> corners = new ArrayList<LatLon>();
-        corners.add( view.computePositionFromScreenPoint(viewport.getMinX(), viewport.getMinY()));
-        corners.add( view.computePositionFromScreenPoint(viewport.getMinX(), viewport.getMaxY()));
-        corners.add( view.computePositionFromScreenPoint(viewport.getMaxX(), viewport.getMaxY()));
-        corners.add( view.computePositionFromScreenPoint(viewport.getMaxX(), viewport.getMinY()));
-        if(Sector.isSector( corners )) 
-            return Sector.boundingSector(corners);
-        return Sector.FULL_SPHERE;
     }
     public Position getPosition() {
         return wwd.getView().getCurrentEyePosition();

@@ -56,6 +56,11 @@ import gov.nasa.worldwind.ogc.kml.gx.GXTour;
 import gov.nasa.worldwind.util.xml.atom.AtomPerson;
 import gov.nasa.worldwind.util.xml.xal.XALAddressDetails;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
@@ -131,7 +136,7 @@ import de.micromata.opengis.kml.v_2_2_0.gx.Tour;
 import de.micromata.opengis.kml.v_2_2_0.xal.AddressDetails;
 
 public class Support {
-	public static enum KMLTag{name,description, coordinates, id, futurevisibility, north,east,south,west}
+	public static enum KMLTag{name,description, coordinates, id, futurevisibility, north,east,south,west, futurehref, href}
 	public static Document convert(KMLDocument get) {
 		if(get == null) return null;
 		Document set = new Document();
@@ -665,4 +670,15 @@ public class Support {
         }
         return null;
     }
+	public static BufferedImage invalidImage() {
+		BufferedImage image = new BufferedImage(100,100,BufferedImage.TYPE_3BYTE_BGR);
+		Graphics2D g2d = image.createGraphics();
+		g2d.setBackground(Color.lightGray);
+		g2d.clearRect(0, 0, image.getWidth(),image.getHeight());
+		g2d.setColor(Color.red);
+		g2d.setStroke(new BasicStroke(.1f*image.getWidth()));
+		g2d.drawRect(0,0, image.getWidth(), image.getHeight());
+		g2d.setFont(new Font("Serif", Font.BOLD,50));
+		return image;
+	}
 }
