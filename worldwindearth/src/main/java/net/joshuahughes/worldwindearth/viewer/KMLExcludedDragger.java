@@ -96,7 +96,7 @@ public class KMLExcludedDragger implements SelectListener
             if (!(topObject instanceof Movable) || topObject.getClass().getName().contains("gov.nasa.worldwind.ogc.kml"))
                 return;
 
-            Movable dragObject = (Movable) topObject;
+            dragObject = (Movable) topObject;
             View view = wwd.getView();
             Globe globe = wwd.getModel().getGlobe();
 
@@ -151,11 +151,12 @@ public class KMLExcludedDragger implements SelectListener
     }
     LinkedHashSet<ActionListener> listenerSet = new LinkedHashSet<>();
 	private Position position;
+	private Movable dragObject;
     public void addActionListener(ActionListener l){
     	listenerSet.add(l);
     }
 
-	public Position getPosition() {
-		return position;
+	public Movable getMovable() {
+		return dragObject;
 	}
 }

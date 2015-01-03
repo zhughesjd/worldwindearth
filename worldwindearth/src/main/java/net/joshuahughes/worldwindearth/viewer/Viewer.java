@@ -1,12 +1,12 @@
 package net.joshuahughes.worldwindearth.viewer;
 
 import gov.nasa.worldwind.BasicModel;
+import gov.nasa.worldwind.Movable;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Position.PositionList;
-import gov.nasa.worldwind.layers.IconLayer;
 import gov.nasa.worldwind.layers.LatLonGraticuleLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.RenderableLayer;
@@ -29,8 +29,12 @@ import gov.nasa.worldwind.ogc.kml.KMLPlacemark;
 import gov.nasa.worldwind.ogc.kml.KMLPoint;
 import gov.nasa.worldwind.ogc.kml.KMLPolygon;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
+import gov.nasa.worldwind.ogc.kml.gx.GXLatLongQuad;
 import gov.nasa.worldwind.ogc.kml.impl.KMLController;
-import gov.nasa.worldwind.render.UserFacingIcon;
+import gov.nasa.worldwind.render.Offset;
+import gov.nasa.worldwind.render.PointPlacemark;
+import gov.nasa.worldwind.render.PointPlacemarkAttributes;
+import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.render.WWIcon;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwindx.examples.util.StatusLayer;
@@ -71,12 +75,27 @@ import net.joshuahughes.worldwindearth.support.Support;
 
 public class Viewer extends JPanel{
 	private static final long serialVersionUID = 8482957233805118951L;
+	private static String imagePath;
+	static{
+		BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
+		Graphics2D g2d = image.createGraphics();
+		g2d.setBackground(Color.white);
+		g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
+		try {
+			File file = File.createTempFile("temp", ".jpg");
+			ImageIO.write(image, "png",file);
+			imagePath = file.getCanonicalPath();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	WorldWindowGLCanvas wwd = new WorldWindowGLCanvas();
 	KMLExcludedDragger dragger = new KMLExcludedDragger(wwd);
 	StatusBar statusBar = new StatusBar();
 	ViewControlsLayer navigation = new ViewControlsLayer(){{setPosition(AVKey.NORTHEAST);}};
 	RenderableLayer kmlLayer = new RenderableLayer();
-	IconLayer editLayer = new IconLayer();
+	//	IconLayer editLayer = new IconLayer();
+	RenderableLayer controlLayer = new RenderableLayer();
 	private KMLAbstractFeature feature;
 	KMLController editController;
 	protected Point mousePressed;
@@ -109,11 +128,13 @@ public class Viewer extends JPanel{
 			}
 		});
 		wwd.getModel().getLayers().add(kmlLayer);
-		wwd.getModel().getLayers().add(editLayer);
+		//		wwd.getModel().getLayers().add(editLayer);
+		wwd.getModel().getLayers().add(controlLayer);
 		getWwd().addSelectListener(dragger);
 	}
 	protected void wwToKML() {
-		Position position = dragger.getPosition();
+		if(dragger.getMovable() == null) return;
+		Position position = dragger.getMovable().getReferencePosition();
 		if(feature!=null){
 			if(feature instanceof KMLPlacemark){
 				KMLPlacemark placemark = (KMLPlacemark) feature;
@@ -124,12 +145,12 @@ public class Viewer extends JPanel{
 				if(geometry instanceof KMLPoint)
 					((KMLPoint)geometry).applyChange( Support.createPoint(position.getLatitude().getDegrees(),position.getLongitude().getDegrees()));
 				if(geometry instanceof KMLLineString || geometry instanceof KMLLinearRing){
-					ArrayList<WWIcon> iconList = new ArrayList<>();
-					for(WWIcon icon : editLayer.getIcons( ))
-						iconList.add( icon );
-					sort(iconList);
+					ArrayList<PointPlacemark> iconList = new ArrayList<>();
+					for(Renderable icon : controlLayer.getRenderables()){
+						iconList.add( (PointPlacemark) icon );
+					}
 					List<Position> list = new ArrayList<>();
-					for(WWIcon icon : iconList)
+					for(PointPlacemark icon : iconList)
 						list.add( new Position(icon.getPosition( ),0) );
 					value = new PositionList(list);
 				}
@@ -137,13 +158,70 @@ public class Viewer extends JPanel{
 				geometry.applyChange( geometry );
 			}
 			if(feature instanceof KMLGroundOverlay){
-				
+				KMLGroundOverlay overlay = (KMLGroundOverlay) feature;
+				if(overlay.getLatLonBox()!=null)adjust(overlay.getLatLonBox(),dragger.getMovable());
+				if(overlay.getLatLonQuad()!=null)adjust(overlay.getLatLonQuad(),dragger.getMovable());
 			}
 			wwd.redraw( );
 		}
 		ArrayList<Position> newList = new ArrayList<Position>();
-		for(WWIcon icon : editLayer.getIcons()) newList.add(icon.getPosition());
+		for(Renderable icon : controlLayer.getRenderables()) newList.add(((PointPlacemark) icon).getPosition());
 		feature.getRoot().firePropertyChange("",null, null);
+	}
+	private void adjust(GXLatLongQuad latLonQuad, Movable movable) {
+		
+	}
+	private void adjust(KMLLatLonBox latLonBox, Movable movable) {
+		if(!(movable instanceof PointPlacemark))return;
+		PointPlacemark point = (PointPlacemark) movable;
+		ArrayList<PointPlacemark> list = new ArrayList<>();
+		for(Renderable r : controlLayer.getRenderables())list.add((PointPlacemark) r);
+		PointPlacemark nw = list.get(0);
+		PointPlacemark ne = list.get(1);
+		PointPlacemark se = list.get(2);
+		PointPlacemark sw = list.get(3);
+		PointPlacemark center = list.get(4);
+		if(point==center){
+			double oldCenterLat = (nw.getPosition().getLatitude().getDegrees()+se.getPosition().getLatitude().getDegrees())/2;
+			double oldCenterLon = (nw.getPosition().getLongitude().getDegrees()+se.getPosition().getLongitude().getDegrees())/2;
+			double latDiff = center.getPosition().getLatitude().getDegrees()-oldCenterLat;
+			double lonDiff = center.getPosition().getLongitude().getDegrees()-oldCenterLon;
+			Position diff = Position.fromDegrees(latDiff, lonDiff);
+			for(PointPlacemark pp : new PointPlacemark[]{nw,ne,se,sw})
+				pp.setPosition(pp.getPosition().add(diff));
+		}
+		if(point==center){
+			double oldCenterLat = (nw.getPosition().getLatitude().getDegrees()+se.getPosition().getLatitude().getDegrees())/2;
+			double oldCenterLon = (nw.getPosition().getLongitude().getDegrees()+se.getPosition().getLongitude().getDegrees())/2;
+			double latDiff = center.getPosition().getLatitude().getDegrees()-oldCenterLat;
+			double lonDiff = center.getPosition().getLongitude().getDegrees()-oldCenterLon;
+			Position diff = Position.fromDegrees(latDiff, lonDiff);
+			for(PointPlacemark pp : new PointPlacemark[]{nw,ne,se,sw})
+				pp.setPosition(pp.getPosition().add(diff));
+		}
+		if(point==nw){
+			ne.setPosition(Position.fromDegrees(nw.getPosition().getLatitude().getDegrees(),ne.getPosition().getLongitude().getDegrees()));
+			sw.setPosition(Position.fromDegrees(sw.getPosition().getLatitude().getDegrees(),nw.getPosition().getLongitude().getDegrees()));
+		}
+		if(point==ne){
+			nw.setPosition(Position.fromDegrees(ne.getPosition().getLatitude().getDegrees(),nw.getPosition().getLongitude().getDegrees()));
+			se.setPosition(Position.fromDegrees(se.getPosition().getLatitude().getDegrees(),ne.getPosition().getLongitude().getDegrees()));
+		}
+		if(point==se){
+			sw.setPosition(Position.fromDegrees(se.getPosition().getLatitude().getDegrees(),sw.getPosition().getLongitude().getDegrees()));
+			ne.setPosition(Position.fromDegrees(ne.getPosition().getLatitude().getDegrees(),se.getPosition().getLongitude().getDegrees()));
+		}
+		if(point==sw){
+			se.setPosition(Position.fromDegrees(sw.getPosition().getLatitude().getDegrees(),se.getPosition().getLongitude().getDegrees()));
+			nw.setPosition(Position.fromDegrees(nw.getPosition().getLatitude().getDegrees(),sw.getPosition().getLongitude().getDegrees()));
+		}
+		center.setPosition(Position.fromDegrees((nw.getPosition().getLatitude().getDegrees()+sw.getPosition().getLatitude().getDegrees())/2,(nw.getPosition().getLongitude().getDegrees()+se.getPosition().getLongitude().getDegrees())/2));
+		KMLGroundOverlay overlay = (KMLGroundOverlay) feature;
+		overlay.getLatLonBox().setField("north",ne.getPosition().getLatitude().getDegrees());
+		overlay.getLatLonBox().setField("east",ne.getPosition().getLongitude().getDegrees());
+		overlay.getLatLonBox().setField("south",sw.getPosition().getLatitude().getDegrees());
+		overlay.getLatLonBox().setField("west",sw.getPosition().getLongitude().getDegrees());
+		overlay.applyChange(overlay);
 	}
 	public void setVisible(final Overlay overlay, boolean show) {
 		if(Overlay.Status_Bar.equals(overlay)){
@@ -165,11 +243,9 @@ public class Viewer extends JPanel{
 	public void stopEditing(){
 		if(editController!=null)
 			kmlLayer.removeRenderable(editController);
-		editLayer.removeAllIcons();
+		controlLayer.removeAllRenderables();
 	}
-	private static int index=0;
 	public void edit(KMLRoot root) {
-		index=0;
 		feature = root.getFeature();
 		stopEditing();
 		if(feature !=null){
@@ -179,26 +255,22 @@ public class Viewer extends JPanel{
 				kmlLayer.addRenderable(editController);
 				if(placemark.getGeometry() instanceof KMLPoint || placemark.getGeometry() instanceof KMLModel){
 					kmlLayer.addRenderable(editController = new KMLController(feature.getRoot( )));
-					BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
-					Graphics2D g2d = image.createGraphics();
-					g2d.setBackground(new Color(0,0,0,1));
-					g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
 					Position position = placemark.getGeometry() instanceof KMLPoint? ((KMLPoint) placemark.getGeometry()).getCoordinates():((KMLModel) placemark.getGeometry()).getLocation().getPosition();
 					feature.getRoot( ).addPropertyChangeListener( new PropertyChangeListener() {
 						@Override
 						public void propertyChange(PropertyChangeEvent event) {
 							Position position = placemark.getGeometry() instanceof KMLPoint? ((KMLPoint) placemark.getGeometry()).getCoordinates():((KMLModel) placemark.getGeometry()).getLocation().getPosition();
-							editLayer.getIcons( ).iterator( ).next( ).setPosition( position );
+							((PointPlacemark)controlLayer.getRenderables().iterator( ).next( )).setPosition( position );
 						}
 					});
-					editLayer.addIcon(new UserFacingIcon(image,position));
+					controlLayer.addRenderable(createPointPlacemark(position,new Color(0,0,0,1),1));
 				}
 				if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon){
 					kmlLayer.addRenderable(editController = new KMLController(feature.getRoot( )));
 					KMLLineString lineString = placemark.getGeometry( ) instanceof KMLLineString?(KMLLineString)placemark.getGeometry( ):((KMLPolygon)placemark.getGeometry( )).getOuterBoundary( );
 					if(lineString.getCoordinates( )!=null && lineString.getCoordinates( ).list!=null)
 						for(Position position : lineString.getCoordinates( ).list)
-							add(position);
+							controlLayer.addRenderable(createPointPlacemark(position,Color.red,.2));
 					addAdapter();
 				}
 			}
@@ -230,6 +302,16 @@ public class Viewer extends JPanel{
 			wwd.redraw();
 		}
 	}
+	private Renderable createPointPlacemark(Position position,Color color,double scale) {
+		PointPlacemark placemark = new PointPlacemark(position);
+		PointPlacemarkAttributes attrs = new PointPlacemarkAttributes();
+		attrs.setImageAddress(imagePath);
+		attrs.setImageColor(color);
+		attrs.setImageOffset(new Offset( 0.5, 0.5, AVKey.FRACTION, AVKey.FRACTION ) );
+		attrs.setScale(scale);
+		placemark.setAttributes(attrs);
+		return placemark;
+	}
 	private void drawHandles(BufferedImage image) {
 		Graphics2D g2d = image.createGraphics();
 		g2d.setColor(Color.green);
@@ -243,6 +325,13 @@ public class Viewer extends JPanel{
 		g2d.drawLine(0,image.getHeight(),(int)(fraction*image.getWidth()),image.getHeight());
 		g2d.drawLine(image.getWidth(),image.getHeight(),(int)((1-fraction)*image.getWidth()),image.getHeight());
 		g2d.drawLine(image.getWidth(),image.getHeight(),image.getWidth(),(int)((1-fraction)*image.getHeight()));
+
+		int w2 = image.getWidth()/2;
+		int h2 = image.getHeight()/2;
+		g2d.drawLine(w2,h2,w2+(int)((fraction)*image.getWidth()),h2);
+		g2d.drawLine(w2,h2,w2-(int)((fraction)*image.getWidth()),h2);
+		g2d.drawLine(w2,h2,w2,h2+(int)((fraction)*image.getHeight()));
+		g2d.drawLine(w2,h2,w2,h2-(int)((fraction)*image.getHeight()));
 	}
 	private void add( KMLLatLonBox box )
 	{
@@ -254,14 +343,9 @@ public class Viewer extends JPanel{
 		Position ne = Position.fromDegrees( n,e );
 		Position se = Position.fromDegrees( s,e );
 		Position sw = Position.fromDegrees( s,w );
-		for(Position posit : new Position[]{nw,ne,se,sw}){
-			BufferedImage image = new BufferedImage(10,10,BufferedImage.TYPE_4BYTE_ABGR);
-			Graphics2D g2d = image.createGraphics();
-			g2d.setBackground(Color.red);
-			g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
-			UserFacingIcon icon = new UserFacingIcon(image, posit);
-			editLayer.addIcon(icon);
-		}
+		Position center = Position.fromDegrees((n+s)/2,(e+w)/2);
+		for(Position position : new Position[]{nw,ne,se,sw,center})
+			controlLayer.addRenderable(createPointPlacemark(position,new Color(0,255,0,255),1));
 	}
 	private void addAdapter( )
 	{
@@ -278,34 +362,23 @@ public class Viewer extends JPanel{
 				if(event.getButton() == MouseEvent.BUTTON3) return;
 				if(!dragged){
 					if(feature instanceof KMLPlacemark)
-						add(wwd.getCurrentPosition( ));
+						controlLayer.addRenderable(createPointPlacemark(wwd.getCurrentPosition(),Color.red,.2));
 					wwToKML();
 				}
 			}
 			public void mouseClicked(MouseEvent event){
 				if(event.getButton() == MouseEvent.BUTTON3){
-					WWIcon lastIcon =  null;
-					for(WWIcon icon : editLayer.getIcons())
-						lastIcon = lastIcon==null?icon:(int)icon.getValue(Integer.class.getSimpleName()) > (int)lastIcon.getValue(Integer.class.getSimpleName())?icon:lastIcon;
-						if(lastIcon!=null)
-							editLayer.removeIcon(lastIcon);
-						wwToKML();
+					PointPlacemark lastIcon =  null;
+					for(Renderable icon : controlLayer.getRenderables())lastIcon =(PointPlacemark) icon;
+					if(lastIcon!=null)
+						controlLayer.removeRenderable(lastIcon);
+					wwToKML();
 				}
 			}
 		};
 		getWwd( ).addMouseListener(adapter);
 		getWwd( ).addMouseMotionListener(adapter);
 
-	}
-	private void add( Position position )
-	{
-		BufferedImage image = new BufferedImage(5,5,BufferedImage.TYPE_4BYTE_ABGR);
-		Graphics2D g2d = image.createGraphics();
-		g2d.setBackground(Color.red);
-		g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
-		UserFacingIcon newIcon = new UserFacingIcon(image,position);
-		newIcon.setValue( Integer.class.getSimpleName( ), index++ );
-		editLayer.addIcon(newIcon);
 	}
 	protected void sort( ArrayList<WWIcon> iconList )
 	{
