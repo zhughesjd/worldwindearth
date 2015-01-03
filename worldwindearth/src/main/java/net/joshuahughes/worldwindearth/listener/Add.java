@@ -67,7 +67,7 @@ public enum Add implements Listener{
             if(Add.Photo.equals( add ))
                 kmlString+="<PhotoOverlay></PhotoOverlay>";
             if(Add.Image_Overlay.equals( add ))
-                kmlString+="<GroundOverlay><Icon><href>http://wallpaperscraft.com/image/52852/2048x2048.jpg</href><viewBoundScale>0.75</viewBoundScale></Icon><LatLonBox><north>31.46519058816173</north><south>26.94948039449266</south><east>-100.2544422612532</east><west>-105.4279090375434</west></LatLonBox></GroundOverlay>";
+                kmlString+="<GroundOverlay><Icon><href>http://assets.worldwildlife.org/photos/2090/images/hero_small/Sumatran-Tiger-Hero.jpg</href><viewBoundScale>0.75</viewBoundScale></Icon><LatLonBox><north>31.46519058816173</north><south>26.94948039449266</south><east>-100.2544422612532</east><west>-105.4279090375434</west></LatLonBox></GroundOverlay>";
             if(Add.Network_Link.equals( add ))
                 kmlString+="<NetworkLink><Link></Link></NetworkLink>";
             kmlString+="</kml>";

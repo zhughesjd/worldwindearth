@@ -35,6 +35,7 @@ import gov.nasa.worldwind.render.WWIcon;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwindx.examples.util.StatusLayer;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -48,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -176,6 +178,7 @@ public class Viewer extends JPanel{
 				editController = new KMLController(feature.getRoot( ));
 				kmlLayer.addRenderable(editController);
 				if(placemark.getGeometry() instanceof KMLPoint || placemark.getGeometry() instanceof KMLModel){
+					kmlLayer.addRenderable(editController = new KMLController(feature.getRoot( )));
 					BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
 					Graphics2D g2d = image.createGraphics();
 					g2d.setBackground(new Color(0,0,0,1));
@@ -191,6 +194,7 @@ public class Viewer extends JPanel{
 					editLayer.addIcon(new UserFacingIcon(image,position));
 				}
 				if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon){
+					kmlLayer.addRenderable(editController = new KMLController(feature.getRoot( )));
 					KMLLineString lineString = placemark.getGeometry( ) instanceof KMLLineString?(KMLLineString)placemark.getGeometry( ):((KMLPolygon)placemark.getGeometry( )).getOuterBoundary( );
 					if(lineString.getCoordinates( )!=null && lineString.getCoordinates( ).list!=null)
 						for(Position position : lineString.getCoordinates( ).list)
@@ -204,15 +208,16 @@ public class Viewer extends JPanel{
 				icon.setField(Support.KMLTag.futurehref.name(),icon.getHref());
 				BufferedImage image = Support.invalidImage();
 				try {
-					image = ImageIO.read(new File(icon.getHref()));
+					String href = icon.getHref();
+					image = href.startsWith("http://")?ImageIO.read(new URL(icon.getHref())):ImageIO.read(new File(icon.getHref()));
 				} catch (IOException e) {
 				}
+				drawHandles(image);
 				try {
-					File tempFile = File.createTempFile("file","png");
-					ImageIO.write(image, "png",tempFile);
+					File tempFile = File.createTempFile("file",".jpg");
+					ImageIO.write(image, "jpg",tempFile);
 					icon.setField(Support.KMLTag.href.name(), tempFile.getCanonicalPath());
 					icon.applyChange(icon);
-
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -220,9 +225,24 @@ public class Viewer extends JPanel{
 				KMLLatLonBox box = overlay.getLatLonBox( );
 				add(box);
 				addAdapter();
+				kmlLayer.addRenderable(editController = new KMLController(feature.getRoot( )));
 			}
 			wwd.redraw();
 		}
+	}
+	private void drawHandles(BufferedImage image) {
+		Graphics2D g2d = image.createGraphics();
+		g2d.setColor(Color.green);
+		g2d.setStroke(new BasicStroke(10));
+		double fraction = .15;
+		g2d.drawLine(0,0,(int)(fraction*image.getWidth()),0);
+		g2d.drawLine(0,0,0,(int)(fraction*image.getHeight()));
+		g2d.drawLine(image.getWidth(),0,(int)((1-fraction)*image.getWidth()),0);
+		g2d.drawLine(image.getWidth(),0,image.getWidth(),(int)(fraction*image.getHeight()));
+		g2d.drawLine(0,image.getHeight(),0,(int)((1-fraction)*image.getHeight()));
+		g2d.drawLine(0,image.getHeight(),(int)(fraction*image.getWidth()),image.getHeight());
+		g2d.drawLine(image.getWidth(),image.getHeight(),(int)((1-fraction)*image.getWidth()),image.getHeight());
+		g2d.drawLine(image.getWidth(),image.getHeight(),image.getWidth(),(int)((1-fraction)*image.getHeight()));
 	}
 	private void add( KMLLatLonBox box )
 	{
@@ -235,7 +255,7 @@ public class Viewer extends JPanel{
 		Position se = Position.fromDegrees( s,e );
 		Position sw = Position.fromDegrees( s,w );
 		for(Position posit : new Position[]{nw,ne,se,sw}){
-			BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
+			BufferedImage image = new BufferedImage(10,10,BufferedImage.TYPE_4BYTE_ABGR);
 			Graphics2D g2d = image.createGraphics();
 			g2d.setBackground(Color.red);
 			g2d.clearRect(0, 0, image.getWidth(), image.getHeight());

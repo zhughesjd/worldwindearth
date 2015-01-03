@@ -679,6 +679,7 @@ public class Support {
 		g2d.setStroke(new BasicStroke(.1f*image.getWidth()));
 		g2d.drawRect(0,0, image.getWidth(), image.getHeight());
 		g2d.setFont(new Font("Serif", Font.BOLD,50));
+		g2d.drawString("X",.5f,.5f);
 		return image;
 	}
 }
