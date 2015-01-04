@@ -110,7 +110,7 @@ public class WorldWindEarth extends JFrame{
     }
     public void edit(KMLAbstractFeature feature) {
         if(feature==null) return;
-        viewer.edit(feature.getRoot());
+        viewer.edit(feature);
         new AddPropertiesDialog(this,feature);
     }
     public void setAddEnabled(boolean enabled) {

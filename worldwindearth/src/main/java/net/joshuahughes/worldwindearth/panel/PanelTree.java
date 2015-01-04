@@ -167,6 +167,11 @@ public class PanelTree extends CheckBoxTree{
             if(!node.getAllowsChildren()) node = (DefaultMutableTreeNode) node.getParent();
         }
         EditorTreeModel model = (EditorTreeModel) getModel();
+        if(feature instanceof KMLGroundOverlay){
+        	KMLGroundOverlay overlay = (KMLGroundOverlay) feature;
+        	Object hrefObject = overlay.getIcon().getField(Support.KMLTag.futurehref.name());
+        	if(hrefObject!=null) overlay.getIcon().setField(Support.KMLTag.href.name(),hrefObject.toString());
+        }
         model.add(node,feature);
     }
     public void remove(String id) {

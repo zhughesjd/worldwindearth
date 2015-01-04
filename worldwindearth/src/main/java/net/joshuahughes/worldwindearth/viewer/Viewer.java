@@ -217,10 +217,10 @@ public class Viewer extends JPanel{
 		}
 		center.setPosition(Position.fromDegrees((nw.getPosition().getLatitude().getDegrees()+sw.getPosition().getLatitude().getDegrees())/2,(nw.getPosition().getLongitude().getDegrees()+se.getPosition().getLongitude().getDegrees())/2));
 		KMLGroundOverlay overlay = (KMLGroundOverlay) feature;
-		overlay.getLatLonBox().setField("north",ne.getPosition().getLatitude().getDegrees());
-		overlay.getLatLonBox().setField("east",ne.getPosition().getLongitude().getDegrees());
-		overlay.getLatLonBox().setField("south",sw.getPosition().getLatitude().getDegrees());
-		overlay.getLatLonBox().setField("west",sw.getPosition().getLongitude().getDegrees());
+		overlay.getLatLonBox().setField(Support.KMLTag.north.name(),ne.getPosition().getLatitude().getDegrees());
+		overlay.getLatLonBox().setField(Support.KMLTag.east.name(),ne.getPosition().getLongitude().getDegrees());
+		overlay.getLatLonBox().setField(Support.KMLTag.south.name(),sw.getPosition().getLatitude().getDegrees());
+		overlay.getLatLonBox().setField(Support.KMLTag.west.name(),sw.getPosition().getLongitude().getDegrees());
 		overlay.applyChange(overlay);
 	}
 	public void setVisible(final Overlay overlay, boolean show) {
@@ -245,8 +245,8 @@ public class Viewer extends JPanel{
 			kmlLayer.removeRenderable(editController);
 		controlLayer.removeAllRenderables();
 	}
-	public void edit(KMLRoot root) {
-		feature = root.getFeature();
+	public void edit(KMLAbstractFeature feature) {
+		this.feature = feature;
 		stopEditing();
 		if(feature !=null){
 			if(feature instanceof KMLPlacemark){
@@ -303,11 +303,14 @@ public class Viewer extends JPanel{
 		}
 	}
 	private Renderable createPointPlacemark(Position position,Color color,double scale) {
+		return createPointPlacemark(position, color, scale,new Offset( 0.5, 0.5, AVKey.FRACTION, AVKey.FRACTION ));
+	}
+	private Renderable createPointPlacemark(Position position,Color color,double scale, Offset offset) {
 		PointPlacemark placemark = new PointPlacemark(position);
 		PointPlacemarkAttributes attrs = new PointPlacemarkAttributes();
 		attrs.setImageAddress(imagePath);
 		attrs.setImageColor(color);
-		attrs.setImageOffset(new Offset( 0.5, 0.5, AVKey.FRACTION, AVKey.FRACTION ) );
+		attrs.setImageOffset( offset );
 		attrs.setScale(scale);
 		placemark.setAttributes(attrs);
 		return placemark;
@@ -344,8 +347,16 @@ public class Viewer extends JPanel{
 		Position se = Position.fromDegrees( s,e );
 		Position sw = Position.fromDegrees( s,w );
 		Position center = Position.fromDegrees((n+s)/2,(e+w)/2);
-		for(Position position : new Position[]{nw,ne,se,sw,center})
-			controlLayer.addRenderable(createPointPlacemark(position,new Color(0,255,0,255),1));
+		Color color = new Color(0,255,0,1);
+		double[] xs = {0,1,1,0};
+		double[] ys = {1,1,0,0};
+		int index=0;
+		for(Position position : new Position[]{nw,ne,se,sw}){
+			Offset offset = new Offset(xs[index],ys[index], AVKey.FRACTION, AVKey.FRACTION );
+			controlLayer.addRenderable(createPointPlacemark(position,color,1,offset));
+			index++;
+		}
+		controlLayer.addRenderable(createPointPlacemark(center,color,2));
 	}
 	private void addAdapter( )
 	{
