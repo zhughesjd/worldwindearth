@@ -43,7 +43,6 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -92,15 +91,13 @@ public class Viewer extends JPanel{
 	WorldWindowGLCanvas wwd = new WorldWindowGLCanvas();
 	KMLExcludedDragger dragger = new KMLExcludedDragger(wwd);
 	StatusBar statusBar = new StatusBar();
-	ViewControlsLayer navigation = new ViewControlsLayer(){{setPosition(AVKey.NORTHEAST);}};
 	RenderableLayer kmlLayer = new RenderableLayer();
-	//	IconLayer editLayer = new IconLayer();
 	RenderableLayer controlLayer = new RenderableLayer();
-	private KMLAbstractFeature feature;
+	KMLAbstractFeature feature;
 	KMLController editController;
-	protected Point mousePressed;
 	public Viewer(){
 		super(new BorderLayout());
+		ViewControlsLayer navigation = new ViewControlsLayer(){{setPosition(AVKey.NORTHEAST);}};
 		wwd.setModel(new BasicModel(){{getLayers().removeAll();}});
 		wwd.getModel().getLayers().add(new SkyGradientLayer(){{setName(Overlay.Atmosphere.name());}});
 		wwd.getModel().getLayers().add(new WorldMapLayer(){{setName(Overlay.Overview_Map.name());setPosition(AVKey.SOUTHEAST);}});
@@ -128,7 +125,6 @@ public class Viewer extends JPanel{
 			}
 		});
 		wwd.getModel().getLayers().add(kmlLayer);
-		//		wwd.getModel().getLayers().add(editLayer);
 		wwd.getModel().getLayers().add(controlLayer);
 		getWwd().addSelectListener(dragger);
 	}
