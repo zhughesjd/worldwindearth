@@ -50,6 +50,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -75,6 +76,7 @@ import net.joshuahughes.worldwindearth.support.Support;
 public class Viewer extends JPanel{
 	private static final long serialVersionUID = 8482957233805118951L;
 	private static String imagePath;
+	private static KMLRoot emptyRoot;
 	static{
 		BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
 		Graphics2D g2d = image.createGraphics();
@@ -87,14 +89,19 @@ public class Viewer extends JPanel{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		try {
+			emptyRoot = KMLRoot.createAndParse(new ByteArrayInputStream("<kml></kml>".getBytes()));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	WorldWindowGLCanvas wwd = new WorldWindowGLCanvas();
 	KMLExcludedDragger dragger = new KMLExcludedDragger(wwd);
 	StatusBar statusBar = new StatusBar();
 	RenderableLayer kmlLayer = new RenderableLayer();
 	RenderableLayer controlLayer = new RenderableLayer();
+	KMLController editController = new KMLController(emptyRoot);
 	KMLAbstractFeature feature;
-	KMLController editController;
 	public Viewer(){
 		super(new BorderLayout());
 		ViewControlsLayer navigation = new ViewControlsLayer(){{setPosition(AVKey.NORTHEAST);}};
@@ -127,6 +134,7 @@ public class Viewer extends JPanel{
 		wwd.getModel().getLayers().add(kmlLayer);
 		wwd.getModel().getLayers().add(controlLayer);
 		getWwd().addSelectListener(dragger);
+		kmlLayer.addRenderable(editController);
 	}
 	protected void wwToKML() {
 		if(dragger.getMovable() == null) return;
@@ -237,20 +245,16 @@ public class Viewer extends JPanel{
 		kmlLayer.addRenderable(new KMLController(kmlRoot));
 	}
 	public void stopEditing(){
-		if(editController!=null)
-			kmlLayer.removeRenderable(editController);
+		editController.setKmlRoot(emptyRoot);
 		controlLayer.removeAllRenderables();
 	}
 	public void edit(KMLAbstractFeature feature) {
 		this.feature = feature;
-		stopEditing();
 		if(feature !=null){
 			if(feature instanceof KMLPlacemark){
 				final KMLPlacemark placemark = (KMLPlacemark) feature;
-				editController = new KMLController(feature.getRoot( ));
-				kmlLayer.addRenderable(editController);
 				if(placemark.getGeometry() instanceof KMLPoint || placemark.getGeometry() instanceof KMLModel){
-					kmlLayer.addRenderable(editController = new KMLController(feature.getRoot( )));
+					editController.setKmlRoot(feature.getRoot( ));
 					Position position = placemark.getGeometry() instanceof KMLPoint? ((KMLPoint) placemark.getGeometry()).getCoordinates():((KMLModel) placemark.getGeometry()).getLocation().getPosition();
 					feature.getRoot( ).addPropertyChangeListener( new PropertyChangeListener() {
 						@Override
@@ -262,7 +266,7 @@ public class Viewer extends JPanel{
 					controlLayer.addRenderable(createPointPlacemark(position,new Color(0,0,0,1),1));
 				}
 				if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon){
-					kmlLayer.addRenderable(editController = new KMLController(feature.getRoot( )));
+					editController.setKmlRoot(feature.getRoot( ));
 					KMLLineString lineString = placemark.getGeometry( ) instanceof KMLLineString?(KMLLineString)placemark.getGeometry( ):((KMLPolygon)placemark.getGeometry( )).getOuterBoundary( );
 					if(lineString.getCoordinates( )!=null && lineString.getCoordinates( ).list!=null)
 						for(Position position : lineString.getCoordinates( ).list)
@@ -271,6 +275,7 @@ public class Viewer extends JPanel{
 				}
 			}
 			if(feature instanceof KMLGroundOverlay){
+				editController.setKmlRoot(feature.getRoot( ));
 				KMLGroundOverlay overlay = ( KMLGroundOverlay ) feature;
 				KMLIcon icon = overlay.getIcon();
 				icon.setField(Support.KMLTag.futurehref.name(),icon.getHref());
@@ -293,7 +298,7 @@ public class Viewer extends JPanel{
 				KMLLatLonBox box = overlay.getLatLonBox( );
 				add(box);
 				addAdapter();
-				kmlLayer.addRenderable(editController = new KMLController(feature.getRoot( )));
+//				kmlLayer.addRenderable(editController = new KMLController(feature.getRoot( )));
 			}
 			wwd.redraw();
 		}
@@ -366,7 +371,7 @@ public class Viewer extends JPanel{
 				dragged=true;
 			}
 			public void mouseReleased(MouseEvent event){
-				if(event.getButton() == MouseEvent.BUTTON3) return;
+				if(event.getButton() == MouseEvent.BUTTON3 || wwd.getCurrentPosition()==null) return;
 				if(!dragged){
 					if(feature instanceof KMLPlacemark)
 						controlLayer.addRenderable(createPointPlacemark(wwd.getCurrentPosition(),Color.red,.2));
