@@ -24,26 +24,14 @@ import gov.nasa.worldwind.ogc.kml.KMLPoint;
 import gov.nasa.worldwind.ogc.kml.KMLPolygon;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 import gov.nasa.worldwind.ogc.kml.impl.KMLController;
-import gov.nasa.worldwind.render.Offset;
-import gov.nasa.worldwind.render.PointPlacemark;
-import gov.nasa.worldwind.render.PointPlacemarkAttributes;
-import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwindx.examples.util.StatusLayer;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 import net.joshuahughes.worldwindearth.listener.Explore;
@@ -54,20 +42,8 @@ import net.joshuahughes.worldwindearth.listener.View_Size;
 
 public class Viewer extends JPanel{
 	private static final long serialVersionUID = 8482957233805118951L;
-	private static String imagePath;
 	private static KMLRoot emptyRoot;
 	static{
-		BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
-		Graphics2D g2d = image.createGraphics();
-		g2d.setBackground(Color.white);
-		g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
-		try {
-			File file = File.createTempFile("temp", ".jpg");
-			ImageIO.write(image, "png",file);
-			imagePath = file.getCanonicalPath();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		try {
 			emptyRoot = KMLRoot.createAndParse(new ByteArrayInputStream("<kml></kml>".getBytes()));
 		} catch (Exception e) {
@@ -112,7 +88,6 @@ public class Viewer extends JPanel{
 		wwd.getModel().getLayers().add(kmlLayer);
 		getWwd().addSelectListener(dragger);
 		kmlLayer.addRenderable(editController);
-		addAdapter();
 	}
 	protected void wwToKML() {
 		controlLayer.adjust(dragger.getMovable());
@@ -138,68 +113,34 @@ public class Viewer extends JPanel{
 	public void stopEditing(){
 		editController.setKmlRoot(emptyRoot);
 		wwd.getModel().getLayers().remove(controlLayer);
+		if(controlLayer instanceof LineStringLayer){
+			LineStringLayer layer = (LineStringLayer) controlLayer;
+			wwd.removeMouseListener(layer.getAdapter());
+			wwd.removeMouseMotionListener(layer.getAdapter());
+		}
+		controlLayer = null;
 	}
 	public void edit(KMLAbstractFeature feature) {
-		if(feature !=null){
-			editController.setKmlRoot(feature.getRoot( ));
-			if(feature instanceof KMLPlacemark){
-				final KMLPlacemark placemark = (KMLPlacemark) feature;
-				if(placemark.getGeometry() instanceof KMLPoint)
-					wwd.getModel().getLayers().add(controlLayer = new PointLayer((KMLPoint) placemark.getGeometry()));
-				if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon){
-					KMLLineString lineString = placemark.getGeometry( ) instanceof KMLLineString?(KMLLineString)placemark.getGeometry( ):((KMLPolygon)placemark.getGeometry( )).getOuterBoundary( );
-					wwd.getModel().getLayers().add(controlLayer = new LineStringLayer(lineString));
-				}
+		editController.setKmlRoot(feature.getRoot( ));
+		if(feature instanceof KMLPlacemark){
+			final KMLPlacemark placemark = (KMLPlacemark) feature;
+			if(placemark.getGeometry() instanceof KMLPoint)
+				wwd.getModel().getLayers().add(controlLayer = new PointLayer((KMLPoint) placemark.getGeometry()));
+			if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon){
+				KMLLineString lineString = placemark.getGeometry( ) instanceof KMLLineString?(KMLLineString)placemark.getGeometry( ):((KMLPolygon)placemark.getGeometry( )).getOuterBoundary( );
+				wwd.getModel().getLayers().add(controlLayer = new LineStringLayer(lineString));
 			}
-			if(feature instanceof KMLGroundOverlay){
-				KMLGroundOverlay overlay = (KMLGroundOverlay) feature;
-				if(overlay.getLatLonBox()!=null)wwd.getModel().getLayers().add(controlLayer = new LatLonBoxLayer(overlay.getLatLonBox()));
-			}
-			wwd.redraw();
 		}
-	}
-	private Renderable createPointPlacemark(Position position,Color color,double scale) {
-		return createPointPlacemark(position, color, scale,new Offset( 0.5, 0.5, AVKey.FRACTION, AVKey.FRACTION ));
-	}
-	private Renderable createPointPlacemark(Position position,Color color,double scale, Offset offset) {
-		PointPlacemark placemark = new PointPlacemark(position);
-		PointPlacemarkAttributes attrs = new PointPlacemarkAttributes();
-		attrs.setImageAddress(imagePath);
-		attrs.setImageColor(color);
-		attrs.setImageOffset( offset );
-		attrs.setScale(scale);
-		placemark.setAttributes(attrs);
-		return placemark;
-	}
-	private void addAdapter( )
-	{
-		MouseAdapter adapter = new MouseAdapter( )
-		{
-			private boolean dragged = false;
-			public void mousePressed(MouseEvent event){
-				dragged=false;
-			}
-			public void mouseDragged(MouseEvent event){
-				dragged=true;
-			}
-			public void mouseReleased(MouseEvent event){
-				if(event.getButton() == MouseEvent.BUTTON1 && !dragged && wwd.getCurrentPosition()!=null && controlLayer instanceof LineStringLayer){
-					controlLayer.addRenderable(createPointPlacemark(wwd.getCurrentPosition(),Color.red,.2));
-					wwToKML();
-				}
-			}
-			public void mouseClicked(MouseEvent event){
-				if(event.getButton() == MouseEvent.BUTTON3){
-					PointPlacemark lastIcon =  null;
-					for(Renderable icon : controlLayer.getRenderables())lastIcon =(PointPlacemark) icon;
-					if(lastIcon!=null)controlLayer.removeRenderable(lastIcon);
-					wwToKML();
-				}
-			}
-		};
-		wwd.addMouseListener(adapter);
-		wwd.addMouseMotionListener(adapter);
-
+		if(feature instanceof KMLGroundOverlay){
+			KMLGroundOverlay overlay = (KMLGroundOverlay) feature;
+			if(overlay.getLatLonBox()!=null)wwd.getModel().getLayers().add(controlLayer = new LatLonBoxLayer(overlay.getLatLonBox()));
+		}
+		wwd.redraw();
+		if(controlLayer instanceof LineStringLayer){
+			LineStringLayer layer = (LineStringLayer) controlLayer;
+			wwd.addMouseListener(layer.getAdapter());
+			wwd.addMouseMotionListener(layer.getAdapter());
+		}
 	}
 	public Position getPosition() {
 		return wwd.getView().getCurrentEyePosition();

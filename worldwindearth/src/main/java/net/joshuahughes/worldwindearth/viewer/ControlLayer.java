@@ -51,9 +51,8 @@ public abstract class ControlLayer<E extends KMLAbstractObject> extends Renderab
 		return placemark;
 	}
 	public void adjust(Movable movable){
-		adjustMe(movable);
+		adjustPoint(movable);
 		object.getRoot().firePropertyChange("",null, null);
 	}
-	protected abstract void adjustMe(Movable movable);
-
+	protected abstract void adjustPoint(Movable movable);
 }

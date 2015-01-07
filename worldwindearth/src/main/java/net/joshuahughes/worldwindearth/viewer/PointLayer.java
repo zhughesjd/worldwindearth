@@ -23,7 +23,7 @@ public class PointLayer extends ControlLayer<KMLPoint>{
 		});
 
 	}
-	public void adjustMe(Movable movable) {
+	protected void adjustPoint(Movable movable) {
 		Position position = movable.getReferencePosition();
 		object.applyChange( Support.createPoint(position.getLatitude().getDegrees(),position.getLongitude().getDegrees()));
 	}

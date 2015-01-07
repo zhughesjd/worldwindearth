@@ -88,7 +88,7 @@ public class LatLonBoxLayer extends ControlLayer<KMLLatLonBox>{
 		}
 		addRenderable(createPointPlacemark(center,color,2));
 	}
-	protected void adjustMe(Movable movable) {
+	protected void adjustPoint(Movable movable) {
 		if(!(movable instanceof PointPlacemark))return;
 		PointPlacemark point = (PointPlacemark) movable;
 		ArrayList<PointPlacemark> list = new ArrayList<>();
@@ -139,5 +139,4 @@ public class LatLonBoxLayer extends ControlLayer<KMLLatLonBox>{
 		object.setField(Support.KMLTag.west.name(),sw.getPosition().getLongitude().getDegrees());
 		object.applyChange(object);
 	}
-
 }
