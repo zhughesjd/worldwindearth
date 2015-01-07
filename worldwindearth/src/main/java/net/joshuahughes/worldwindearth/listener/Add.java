@@ -30,7 +30,7 @@ public enum Add implements Listener{
         KMLAbstractFeature feature = create(this);
         feature.setField(Support.KMLTag.name.name(),"Untitled"+name( ).replace('_', ' ') );
         feature.setField(Support.KMLTag.id.name(),earth.getPanel().getTreeMap().get(EditorTreeModel.Type.Places).getModel().createUniqueId());
-        if(feature instanceof KMLPlacemark && ((KMLPlacemark)feature).getGeometry( ) instanceof KMLPoint)((KMLPoint)((KMLPlacemark)feature).getGeometry( )).applyChange( Support.createPoint( earth.getViewer().getPosition() ) );
+        if(feature instanceof KMLPlacemark && ((KMLPlacemark)feature).getGeometry( ) instanceof KMLPoint)((KMLPoint)((KMLPlacemark)feature).getGeometry( )).applyChange( Support.createPoint( earth.getViewer().getWwd().getCurrentPosition() ) );
         if(feature instanceof KMLGroundOverlay){
             KMLGroundOverlay overlay = ( KMLGroundOverlay ) feature;
             Sector sector = earth.getViewer( ).getWwd().getSceneController().getDrawContext().getVisibleSector();

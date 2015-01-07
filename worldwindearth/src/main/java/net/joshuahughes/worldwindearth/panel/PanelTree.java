@@ -170,7 +170,10 @@ public class PanelTree extends CheckBoxTree{
         if(feature instanceof KMLGroundOverlay){
         	KMLGroundOverlay overlay = (KMLGroundOverlay) feature;
         	Object hrefObject = overlay.getIcon().getField(Support.KMLTag.futurehref.name());
-        	if(hrefObject!=null) overlay.getIcon().setField(Support.KMLTag.href.name(),hrefObject.toString());
+        	if(hrefObject!=null){
+        		overlay.getIcon().setField(Support.KMLTag.href.name(),hrefObject.toString());
+        		overlay.getIcon().removeField(Support.KMLTag.futurehref.name());
+        	}
         }
         model.add(node,feature);
     }
