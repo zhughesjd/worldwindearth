@@ -15,8 +15,9 @@ import gov.nasa.worldwind.render.Renderable;
 public class LineStringLayer extends ControlLayer<KMLLineString>{
 	public LineStringLayer(KMLLineString object) {
 		super(object);
-		for(Position position : object.getCoordinates( ).list)
-			addRenderable(createPointPlacemark(position,Color.red,.2));
+		if(object.getCoordinates( )!=null && object.getCoordinates( ).list!=null)
+			for(Position position : object.getCoordinates( ).list)
+				addRenderable(createPointPlacemark(position,Color.red,.2));
 
 	}
 	public void adjustMe(Movable movable) {

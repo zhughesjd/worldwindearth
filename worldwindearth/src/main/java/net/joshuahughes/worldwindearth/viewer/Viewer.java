@@ -28,7 +28,6 @@ import gov.nasa.worldwind.render.Offset;
 import gov.nasa.worldwind.render.PointPlacemark;
 import gov.nasa.worldwind.render.PointPlacemarkAttributes;
 import gov.nasa.worldwind.render.Renderable;
-import gov.nasa.worldwind.render.WWIcon;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwindx.examples.util.StatusLayer;
 
@@ -43,13 +42,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
-import java.util.function.ToLongFunction;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -156,9 +148,7 @@ public class Viewer extends JPanel{
 					wwd.getModel().getLayers().add(controlLayer = new PointLayer((KMLPoint) placemark.getGeometry()));
 				if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon){
 					KMLLineString lineString = placemark.getGeometry( ) instanceof KMLLineString?(KMLLineString)placemark.getGeometry( ):((KMLPolygon)placemark.getGeometry( )).getOuterBoundary( );
-					if(lineString.getCoordinates( )!=null && lineString.getCoordinates( ).list!=null)
-						wwd.getModel().getLayers().add(controlLayer = new LineStringLayer(lineString));
-						
+					wwd.getModel().getLayers().add(controlLayer = new LineStringLayer(lineString));
 				}
 			}
 			if(feature instanceof KMLGroundOverlay){
@@ -209,57 +199,6 @@ public class Viewer extends JPanel{
 		};
 		wwd.addMouseListener(adapter);
 		wwd.addMouseMotionListener(adapter);
-
-	}
-	protected void sort( ArrayList<WWIcon> iconList )
-	{
-		Collections.sort( iconList,new Comparator<WWIcon>(){
-			public int compare(WWIcon i1,WWIcon i2){
-				return ((Integer)i1.getValue( Integer.class.getSimpleName( ) )).compareTo((Integer)i2.getValue( Integer.class.getSimpleName( ) ));
-			}
-
-			@Override
-			public Comparator<WWIcon> reversed( )
-			{
-				return null;
-			}
-
-			@Override
-			public Comparator<WWIcon> thenComparing( Comparator<? super WWIcon> other )
-			{
-				return null;
-			}
-
-			@Override
-			public <U> Comparator<WWIcon> thenComparing( Function<? super WWIcon, ? extends U> keyExtractor, Comparator<? super U> keyComparator )
-			{
-				return null;
-			}
-
-			@Override
-			public <U extends Comparable<? super U>> Comparator<WWIcon> thenComparing( Function<? super WWIcon, ? extends U> keyExtractor )
-			{
-				return null;
-			}
-
-			@Override
-			public Comparator<WWIcon> thenComparingInt( ToIntFunction<? super WWIcon> keyExtractor )
-			{
-				return null;
-			}
-
-			@Override
-			public Comparator<WWIcon> thenComparingLong( ToLongFunction<? super WWIcon> keyExtractor )
-			{
-				return null;
-			}
-
-			@Override
-			public Comparator<WWIcon> thenComparingDouble( ToDoubleFunction<? super WWIcon> keyExtractor )
-			{
-				return null;
-			}
-		});
 
 	}
 	public Position getPosition() {
