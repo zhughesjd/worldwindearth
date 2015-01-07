@@ -1,4 +1,4 @@
-package net.joshuahughes.worldwindearth.viewer;
+package net.joshuahughes.worldwindearth.viewer.controllayer;
 
 import gov.nasa.worldwind.Movable;
 import gov.nasa.worldwind.geom.Position;

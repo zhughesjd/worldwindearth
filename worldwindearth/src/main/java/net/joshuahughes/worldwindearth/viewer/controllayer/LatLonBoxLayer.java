@@ -1,4 +1,4 @@
-package net.joshuahughes.worldwindearth.viewer;
+package net.joshuahughes.worldwindearth.viewer.controllayer;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -137,6 +137,5 @@ public class LatLonBoxLayer extends ControlLayer<KMLLatLonBox>{
 		object.setField(Support.KMLTag.east.name(),ne.getPosition().getLongitude().getDegrees());
 		object.setField(Support.KMLTag.south.name(),sw.getPosition().getLatitude().getDegrees());
 		object.setField(Support.KMLTag.west.name(),sw.getPosition().getLongitude().getDegrees());
-		object.applyChange(object);
 	}
 }

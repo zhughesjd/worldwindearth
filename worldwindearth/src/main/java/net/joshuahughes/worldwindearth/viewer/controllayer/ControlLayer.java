@@ -1,4 +1,4 @@
-package net.joshuahughes.worldwindearth.viewer;
+package net.joshuahughes.worldwindearth.viewer.controllayer;
 
 import gov.nasa.worldwind.Movable;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -19,6 +19,17 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public abstract class ControlLayer<E extends KMLAbstractObject> extends RenderableLayer{
+	protected E object;
+	public ControlLayer(E object){
+		this.object = object;
+	}
+	public void adjust(Movable movable){
+		adjustPoint(movable);
+		object.applyChange( object );
+		object.getRoot().firePropertyChange("",null, null);
+	}
+	protected abstract void adjustPoint(Movable movable);
+
 	protected static String imagePath;
 	static{
 		BufferedImage image = new BufferedImage(30,30,BufferedImage.TYPE_4BYTE_ABGR);
@@ -33,14 +44,10 @@ public abstract class ControlLayer<E extends KMLAbstractObject> extends Renderab
 			e.printStackTrace();
 		}
 	}
-	protected E object;
-	public ControlLayer(E object){
-		this.object = object;
-	}
-	protected Renderable createPointPlacemark(Position position,Color color,double scale) {
+	protected static Renderable createPointPlacemark(Position position,Color color,double scale) {
 		return createPointPlacemark(position, color, scale,new Offset( 0.5, 0.5, AVKey.FRACTION, AVKey.FRACTION ));
 	}
-	protected Renderable createPointPlacemark(Position position,Color color,double scale, Offset offset) {
+	protected static Renderable createPointPlacemark(Position position,Color color,double scale, Offset offset) {
 		PointPlacemark placemark = new PointPlacemark(position);
 		PointPlacemarkAttributes attrs = new PointPlacemarkAttributes();
 		attrs.setImageAddress(imagePath);
@@ -50,9 +57,7 @@ public abstract class ControlLayer<E extends KMLAbstractObject> extends Renderab
 		placemark.setAttributes(attrs);
 		return placemark;
 	}
-	public void adjust(Movable movable){
-		adjustPoint(movable);
-		object.getRoot().firePropertyChange("",null, null);
-	}
-	protected abstract void adjustPoint(Movable movable);
+
+
+
 }

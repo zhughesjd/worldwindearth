@@ -39,6 +39,11 @@ import net.joshuahughes.worldwindearth.listener.Overlay;
 import net.joshuahughes.worldwindearth.listener.Reset;
 import net.joshuahughes.worldwindearth.listener.Show_Navigation;
 import net.joshuahughes.worldwindearth.listener.View_Size;
+import net.joshuahughes.worldwindearth.viewer.controllayer.ControlLayer;
+import net.joshuahughes.worldwindearth.viewer.controllayer.EmptyLayer;
+import net.joshuahughes.worldwindearth.viewer.controllayer.LatLonBoxLayer;
+import net.joshuahughes.worldwindearth.viewer.controllayer.LineStringLayer;
+import net.joshuahughes.worldwindearth.viewer.controllayer.PointLayer;
 
 public class Viewer extends JPanel{
 	private static final long serialVersionUID = 8482957233805118951L;
@@ -89,7 +94,7 @@ public class Viewer extends JPanel{
 		getWwd().addSelectListener(dragger);
 		kmlLayer.addRenderable(editController);
 	}
-	protected void wwToKML() {
+	public void wwToKML() {
 		controlLayer.adjust(dragger.getMovable());
 		wwd.redraw( );
 	}
@@ -121,26 +126,29 @@ public class Viewer extends JPanel{
 		controlLayer = null;
 	}
 	public void edit(KMLAbstractFeature feature) {
+		controlLayer = new EmptyLayer(feature);
 		editController.setKmlRoot(feature.getRoot( ));
 		if(feature instanceof KMLPlacemark){
 			final KMLPlacemark placemark = (KMLPlacemark) feature;
 			if(placemark.getGeometry() instanceof KMLPoint)
-				wwd.getModel().getLayers().add(controlLayer = new PointLayer((KMLPoint) placemark.getGeometry()));
+				controlLayer = new PointLayer((KMLPoint) placemark.getGeometry());
 			if(placemark.getGeometry() instanceof KMLLineString || placemark.getGeometry() instanceof KMLPolygon){
 				KMLLineString lineString = placemark.getGeometry( ) instanceof KMLLineString?(KMLLineString)placemark.getGeometry( ):((KMLPolygon)placemark.getGeometry( )).getOuterBoundary( );
-				wwd.getModel().getLayers().add(controlLayer = new LineStringLayer(lineString));
+				controlLayer = new LineStringLayer(lineString);
 			}
 		}
 		if(feature instanceof KMLGroundOverlay){
 			KMLGroundOverlay overlay = (KMLGroundOverlay) feature;
-			if(overlay.getLatLonBox()!=null)wwd.getModel().getLayers().add(controlLayer = new LatLonBoxLayer(overlay.getLatLonBox()));
+			if(overlay.getLatLonBox()!=null)
+				controlLayer = new LatLonBoxLayer(overlay.getLatLonBox());
 		}
-		wwd.redraw();
+		wwd.getModel().getLayers().add(controlLayer);
 		if(controlLayer instanceof LineStringLayer){
 			LineStringLayer layer = (LineStringLayer) controlLayer;
 			wwd.addMouseListener(layer.getAdapter());
 			wwd.addMouseMotionListener(layer.getAdapter());
 		}
+		wwd.redraw();
 	}
 	public Position getPosition() {
 		return wwd.getView().getCurrentEyePosition();

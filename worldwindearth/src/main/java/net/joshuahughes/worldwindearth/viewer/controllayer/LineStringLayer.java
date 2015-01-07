@@ -1,4 +1,4 @@
-package net.joshuahughes.worldwindearth.viewer;
+package net.joshuahughes.worldwindearth.viewer.controllayer;
 
 import gov.nasa.worldwind.Movable;
 import gov.nasa.worldwind.geom.Position;
@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.joshuahughes.worldwindearth.support.Support;
+import net.joshuahughes.worldwindearth.viewer.Viewer;
 
 public class LineStringLayer extends ControlLayer<KMLLineString>{
 	private MouseAdapter adapter = new MouseAdapter( )
@@ -55,8 +56,6 @@ public class LineStringLayer extends ControlLayer<KMLLineString>{
 		for(Renderable icon : getRenderables())
 			list.add( ((PointPlacemark) icon).getPosition() );
 		object.setField( Support.KMLTag.coordinates.name( ), new PositionList(list));
-		object.applyChange( object );
-
 	}
 	public MouseAdapter getAdapter(){
 		return adapter ;
