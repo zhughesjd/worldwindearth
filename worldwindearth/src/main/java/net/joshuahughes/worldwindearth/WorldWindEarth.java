@@ -3,7 +3,6 @@ package net.joshuahughes.worldwindearth;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
 import gov.nasa.worldwind.ogc.kml.KMLFolder;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
-import gov.nasa.worldwind.ogc.kml.impl.KMLTraversalContext;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -38,13 +37,11 @@ public class WorldWindEarth extends JFrame{
     JPanel toolBarEarthPanel = new JPanel(new BorderLayout());
     JSplitPane panelToolBarEarthPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,panel,toolBarEarthPanel);
     RulerDialog rulerDialog = new RulerDialog(this);
-    KMLTraversalContext tc = new KMLTraversalContext( );
     public WorldWindEarth(){
         for(Entry<EditorTreeModel.Type, PanelTree> e : panel.getTreeMap( ).entrySet( )){
             KMLRoot kmlRoot = ((KMLFolder)e.getValue( ).getModel( ).getRoot().getUserObject( )).getRoot( );
             viewer.add( kmlRoot );
         }
-        tc.initialize( );
         setTitle("Worldwind Earth");
         toolBarEarthPanel.add(viewer,BorderLayout.CENTER);
         setJMenuBar(menubar);
