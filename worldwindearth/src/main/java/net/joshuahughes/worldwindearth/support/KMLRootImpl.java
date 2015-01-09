@@ -35,10 +35,9 @@ public class KMLRootImpl extends KMLAbstractImpl<KMLRoot>{
 	protected void exportAsKML(String mimeType, Object output, XMLStreamWriter xmlWriter) throws IOException, XMLStreamException
 	{
 		xmlWriter.writeStartElement(Support.KMLTag.kml.name());
-		if(object.getNamespaceURI()!=null && !object.getNamespaceURI().isEmpty())
-			xmlWriter.writeAttribute(Support.KMLTag.xmlns.name(), object.getNamespaceURI());
+//		if(object.getNamespaceURI()!=null && !object.getNamespaceURI().isEmpty())
+//			xmlWriter.writeAttribute(Support.KMLTag.xmlns.name(), object.getNamespaceURI());
 		export(mimeType,object.getFeature(), output);
-		xmlWriter.flush();
 		xmlWriter.writeEndElement();
 	}
 	public static void main(String[] args) throws Exception{
@@ -54,6 +53,7 @@ public class KMLRootImpl extends KMLAbstractImpl<KMLRoot>{
 		Writer stringWriter = new StringWriter();
 		rootImpl.export(KMLConstants.KML_MIME_TYPE,stringWriter);
 		String xmlString = stringWriter.toString();
+		xmlString = xmlString.replace("<kml", "<kml>").replace(">></kml>", "></kml>");
 		System.out.println(xmlString);
 		Transformer transformer = TransformerFactory.newInstance().newTransformer();
 		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
