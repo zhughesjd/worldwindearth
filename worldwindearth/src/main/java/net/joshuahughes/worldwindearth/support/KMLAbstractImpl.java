@@ -109,7 +109,7 @@ public abstract class KMLAbstractImpl<O extends KMLAbstractObject> implements Ex
 					throw new IllegalArgumentException(message);
 				}
 
-				exportAsKML(mimeType,output,xmlWriter);
+				exportAsKML(mimeType,xmlWriter);
 
 				xmlWriter.flush();
 				if (closeWriterWhenFinished)
@@ -130,7 +130,7 @@ public abstract class KMLAbstractImpl<O extends KMLAbstractObject> implements Ex
 			throw new UnsupportedOperationException(message);
 		}
 	}
-	protected abstract void exportAsKML(String mimeType, Object output, XMLStreamWriter xmlWriter) throws IOException, XMLStreamException;
+	protected abstract void exportAsKML(String mimeType,XMLStreamWriter xmlWriter) throws IOException, XMLStreamException;
 	public void export(String mimeType,KMLAbstractFeature feature, Object output) throws IOException
 	{
 		if(feature == null)return;
@@ -139,7 +139,10 @@ public abstract class KMLAbstractImpl<O extends KMLAbstractObject> implements Ex
 			export(mimeType,placemark,placemark.getGeometry(),object);
 		}
 		if(feature instanceof KMLGroundOverlay){
-			KMLSurfaceImageImpl impl = new KMLSurfaceImageImpl(new KMLTraversalContext(),(KMLGroundOverlay) feature);
+			
+			KMLGroundOverlay overlay = (KMLGroundOverlay) feature;
+			KMLSurfaceImageImpl impl = new KMLSurfaceImageImpl(new KMLTraversalContext(),overlay );
+			impl.setImageSource(overlay.getIcon().getHref(), overlay.getPositions().list);
 			impl.export(mimeType, output);
 		}
 	}

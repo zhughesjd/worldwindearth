@@ -19,10 +19,10 @@ public class KMLMultiGeometryImpl extends KMLAbstractImpl<KMLMultiGeometry>{
 	}
 
 	@Override
-	protected void exportAsKML(String mimeType, Object output,XMLStreamWriter xmlWriter) throws IOException, XMLStreamException {
+	protected void exportAsKML(String mimeType,XMLStreamWriter xmlWriter) throws IOException, XMLStreamException {
         xmlWriter.writeStartElement(Support.KMLTag.MultiGeometry.name());
         for(KMLAbstractGeometry geom : object.getGeometries())
-        export(mimeType,placemark,geom,output);
+        export(mimeType,placemark,geom,xmlWriter);
         xmlWriter.writeEndElement();
 		
 	}

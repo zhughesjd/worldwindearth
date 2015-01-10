@@ -8,7 +8,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.OutputKeys;
@@ -32,29 +31,20 @@ public class KMLRootImpl extends KMLAbstractImpl<KMLRoot>{
 	 * @throws IOException        if an exception occurs while exporting the data.
 	 * @see #export(String, Object)
 	 */
-	protected void exportAsKML(String mimeType, Object output, XMLStreamWriter xmlWriter) throws IOException, XMLStreamException
+	protected void exportAsKML(String mimeType,XMLStreamWriter xmlWriter) throws IOException, XMLStreamException
 	{
 		xmlWriter.writeStartElement(Support.KMLTag.kml.name());
-//		if(object.getNamespaceURI()!=null && !object.getNamespaceURI().isEmpty())
-//			xmlWriter.writeAttribute(Support.KMLTag.xmlns.name(), object.getNamespaceURI());
-		export(mimeType,object.getFeature(), output);
+		if(object.getNamespaceURI()!=null && !object.getNamespaceURI().isEmpty())
+			xmlWriter.writeAttribute(Support.KMLTag.xmlns.name(), object.getNamespaceURI());
+		export(mimeType,object.getFeature(), xmlWriter);
 		xmlWriter.writeEndElement();
 	}
 	public static void main(String[] args) throws Exception{
-		XMLOutputFactory factory = XMLOutputFactory.newInstance();
-		XMLStreamWriter writer = factory.createXMLStreamWriter(System.out);
-		writer.writeStartElement("HW");
-		writer.writeStartElement("HW2");
-		writer.writeEndElement();
-		writer.writeEndElement();
-		writer.close();
 		KMLRoot root = KMLRoot.createAndParse("C:/Users/sandra/Desktop/image.kml");
 		KMLRootImpl rootImpl = new KMLRootImpl(root);
 		Writer stringWriter = new StringWriter();
 		rootImpl.export(KMLConstants.KML_MIME_TYPE,stringWriter);
 		String xmlString = stringWriter.toString();
-		xmlString = xmlString.replace("<kml", "<kml>").replace(">></kml>", "></kml>");
-		System.out.println(xmlString);
 		Transformer transformer = TransformerFactory.newInstance().newTransformer();
 		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
