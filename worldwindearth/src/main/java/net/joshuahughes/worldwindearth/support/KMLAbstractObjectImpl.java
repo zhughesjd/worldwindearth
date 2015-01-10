@@ -27,15 +27,25 @@ import gov.nasa.worldwind.util.Logging;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-public abstract class KMLAbstractImpl<O extends KMLAbstractObject> implements Exportable{
+import net.joshuahughes.worldwindearth.support.Support.KMLTag;
+
+public abstract class KMLAbstractObjectImpl<O extends KMLAbstractObject> implements Exportable{
 	protected O object;
-	public KMLAbstractImpl(O object) {
+	LinkedHashMap<KMLTag,String> attributeMap = new LinkedHashMap<>();
+	LinkedHashMap<KMLTag,String> stringElementMap = new LinkedHashMap<>();
+	ArrayList<Exportable> children = new ArrayList<>();
+	public KMLAbstractObjectImpl(O object) {
 		this.object = object;
+		attributeMap.put(KMLTag.id, object.getId());
+		attributeMap.put(KMLTag.targetId, object.getTargetId());
 	}
 	@Override
 	/** {@inheritDoc} */
@@ -108,10 +118,24 @@ public abstract class KMLAbstractImpl<O extends KMLAbstractObject> implements Ex
 					Logging.logger().warning(message);
 					throw new IllegalArgumentException(message);
 				}
-
-				exportAsKML(mimeType,xmlWriter);
-
+				
+				xmlWriter.writeStartElement(getTag().name());
+				for(Entry<KMLTag, String> entry : attributeMap.entrySet())
+					if(entry.getValue()!=null && !entry.getValue().isEmpty())
+						xmlWriter.writeAttribute(entry.getKey().name(), entry.getValue());
+				for(Entry<KMLTag, String> entry : stringElementMap.entrySet())
+					if(entry.getValue()!=null && !entry.getValue().isEmpty()){
+						xmlWriter.writeStartElement(entry.getKey().name());
+							xmlWriter.writeCharacters(entry.getValue());
+						xmlWriter.writeEndElement();
+					}
+				for(Exportable child : children)
+					child.export(mimeType,xmlWriter);
+//					exportAsKML(mimeType,xmlWriter);
+				xmlWriter.writeEndElement();
+				
 				xmlWriter.flush();
+
 				if (closeWriterWhenFinished)
 					xmlWriter.close();
 
@@ -130,72 +154,65 @@ public abstract class KMLAbstractImpl<O extends KMLAbstractObject> implements Ex
 			throw new UnsupportedOperationException(message);
 		}
 	}
-	protected abstract void exportAsKML(String mimeType,XMLStreamWriter xmlWriter) throws IOException, XMLStreamException;
-	public void export(String mimeType,KMLAbstractFeature feature, Object output) throws IOException
+	protected abstract KMLTag getTag();
+	public static Exportable export(KMLAbstractFeature feature)
 	{
-		if(feature == null)return;
 		if(feature instanceof KMLPlacemark){
 			KMLPlacemark placemark = (KMLPlacemark) feature;
-			export(mimeType,placemark,placemark.getGeometry(),object);
+			return export(placemark,placemark.getGeometry());
 		}
 		if(feature instanceof KMLGroundOverlay){
 			
 			KMLGroundOverlay overlay = (KMLGroundOverlay) feature;
 			KMLSurfaceImageImpl impl = new KMLSurfaceImageImpl(new KMLTraversalContext(),overlay );
 			impl.setImageSource(overlay.getIcon().getHref(), overlay.getPositions().list);
-			impl.export(mimeType, output);
+			return impl;
 		}
+		return null;
 	}
-	protected void export(String mimeType,KMLPlacemark placemark,KMLAbstractGeometry geom,Object output)
+	public static Exportable export(KMLPlacemark placemark,KMLAbstractGeometry geom)
 	{
-		if (geom == null)
-			return;
 		KMLTraversalContext tc = new KMLTraversalContext();
 		Exportable exportable = null;
 		if (geom instanceof KMLPoint)
-			exportable = getPointRenderable(tc,placemark,(KMLPoint)geom,mimeType,output);
+			exportable = getPointRenderable(tc,placemark,(KMLPoint)geom);
 		else if (geom instanceof KMLLinearRing) // since LinearRing is a subclass of LineString, this test must precede
-			exportable = getLinearRingRenderable(tc,placemark,(KMLLinearRing)geom,mimeType,output);
+			exportable = getLinearRingRenderable(tc,placemark,(KMLLinearRing)geom);
 		else if (geom instanceof KMLLineString)
-			exportable = getLineStringRenderable(tc,placemark,(KMLLineString)geom,mimeType,output);
+			exportable = getLineStringRenderable(tc,placemark,(KMLLineString)geom);
 		else if (geom instanceof KMLPolygon)
-			exportable = getPolygonRenderable(tc,placemark,(KMLPolygon)geom,mimeType,output);
+			exportable = getPolygonRenderable(tc,placemark,(KMLPolygon)geom);
 		else if (geom instanceof KMLMultiGeometry)
-			exportable = getMultiGeometryRenderable(tc,placemark,(KMLMultiGeometry)geom,mimeType,output);
+			exportable = getMultiGeometryRenderable(tc,placemark,(KMLMultiGeometry)geom);
 		else if (geom instanceof KMLModel)
-			exportable = getModelRenderable(tc,placemark,(KMLModel)geom,mimeType,output);
-		if(exportable != null)
-			try {
-				exportable.export(mimeType, output);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			exportable = getModelRenderable(tc,placemark,(KMLModel)geom);
+		return exportable;
 	}
-	protected Exportable getMultiGeometryRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLMultiGeometry geom, String mimeType, Object output)
+	protected static Exportable getMultiGeometryRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLMultiGeometry geom)
 	{
 		return new KMLMultiGeometryImpl(placemark,geom);
 	}
-	protected Exportable getModelRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLModel geom, String mimeType, Object output)
+	protected static Exportable getModelRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLModel geom)
 	{
 		//    	return new KMLModelPlacemarkImpl(tc,placemark, geom);
 		return null;
 	}
 
-	protected Exportable getPointRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLPoint geom, String mimeType, Object output)
+	protected static Exportable getPointRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLPoint geom)
 	{
 		if (geom.getCoordinates() == null)
 			return null;
 		return new KMLPointPlacemarkImpl(tc,placemark,geom);
 	}
 
-	protected Exportable getLineStringRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLLineString geom, String mimeType, Object output)
+	protected static Exportable getLineStringRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLLineString geom)
 	{
 		if (geom.getCoordinates() == null)
 			return null;
 		return new KMLLineStringPlacemarkImpl(tc,placemark,geom);
 	}
 
-	protected Exportable getLinearRingRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLLinearRing geom, String mimeType, Object output)
+	protected static Exportable getLinearRingRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLLinearRing geom)
 	{
 		KMLLinearRing shape = (KMLLinearRing) geom;
 
@@ -209,14 +226,14 @@ public abstract class KMLAbstractImpl<O extends KMLAbstractObject> implements Ex
 		return impl;
 	}
 
-	protected Exportable getPolygonRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLPolygon geom, String mimeType, Object output)
+	protected static Exportable getPolygonRenderable(KMLTraversalContext tc, KMLPlacemark placemark,KMLPolygon geom)
 	{
 		KMLPolygon shape = (KMLPolygon) geom;
 
 		if (shape.getOuterBoundary().getCoordinates() == null)
 			return null;
 
-		if ("clampToGround".equals(shape.getAltitudeMode()) || !this.isValidAltitudeMode(shape.getAltitudeMode()))
+		if ("clampToGround".equals(shape.getAltitudeMode()) || !isValidAltitudeMode(shape.getAltitudeMode()))
 			return new KMLSurfacePolygonImpl(tc, placemark, geom);
 		else if (shape.isExtrude())
 			return new KMLExtrudedPolygonImpl(tc, placemark, geom);
@@ -230,7 +247,7 @@ public abstract class KMLAbstractImpl<O extends KMLAbstractObject> implements Ex
 	 *
 	 * @return True if {@code altMode} is one of "clampToGround", "relativeToGround", or "absolute".
 	 */
-	protected boolean isValidAltitudeMode(String altMode)
+	protected static boolean isValidAltitudeMode(String altMode)
 	{
 		return "clampToGround".equals(altMode)
 				|| "relativeToGround".equals(altMode)

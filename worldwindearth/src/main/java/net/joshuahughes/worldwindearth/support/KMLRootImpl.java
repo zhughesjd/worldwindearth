@@ -3,41 +3,28 @@ package net.joshuahughes.worldwindearth.support;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-public class KMLRootImpl extends KMLAbstractImpl<KMLRoot>{
+import net.joshuahughes.worldwindearth.support.Support.KMLTag;
+
+public class KMLRootImpl extends KMLAbstractObjectImpl<KMLRoot>{
 	public KMLRootImpl(KMLRoot root){
 		super(root);
+		attributeMap.put(KMLTag.id, root.getId());
+		attributeMap.put(KMLTag.targetId, root.getTargetId());
+		attributeMap.put(KMLTag.namespaceURI,root.getNamespaceURI());
+		children.add(KMLAbstractObjectImpl.export(root.getFeature()));
 	}
-	/**
-	 * Export the placemark to KML as a {@code <Placemark>} element. The {@code output} object will receive the data.
-	 * This object must be one of: java.io.Writer java.io.OutputStream javax.xml.stream.XMLStreamWriter
-	 *
-	 * @param output Object to receive the generated KML.
-	 * @param output 
-	 *
-	 * @throws XMLStreamException If an exception occurs while writing the KML
-	 * @throws IOException        if an exception occurs while exporting the data.
-	 * @see #export(String, Object)
-	 */
-	protected void exportAsKML(String mimeType,XMLStreamWriter xmlWriter) throws IOException, XMLStreamException
-	{
-		xmlWriter.writeStartElement(Support.KMLTag.kml.name());
-		if(object.getNamespaceURI()!=null && !object.getNamespaceURI().isEmpty())
-			xmlWriter.writeAttribute(Support.KMLTag.xmlns.name(), object.getNamespaceURI());
-		export(mimeType,object.getFeature(), xmlWriter);
-		xmlWriter.writeEndElement();
+	protected KMLTag getTag(){
+		return KMLTag.kml;
 	}
 	public static void main(String[] args) throws Exception{
 		KMLRoot root = KMLRoot.createAndParse("C:/Users/sandra/Desktop/image.kml");
