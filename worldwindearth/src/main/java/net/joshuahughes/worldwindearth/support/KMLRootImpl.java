@@ -18,8 +18,6 @@ import net.joshuahughes.worldwindearth.support.Support.KMLTag;
 public class KMLRootImpl extends KMLAbstractObjectImpl<KMLRoot>{
 	public KMLRootImpl(KMLRoot root){
 		super(root);
-		attributeMap.put(KMLTag.id, root.getId());
-		attributeMap.put(KMLTag.targetId, root.getTargetId());
 		attributeMap.put(KMLTag.namespaceURI,root.getNamespaceURI());
 		children.add(KMLAbstractObjectImpl.export(root.getFeature()));
 	}
